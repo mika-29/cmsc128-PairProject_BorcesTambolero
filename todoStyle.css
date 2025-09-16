@@ -1,0 +1,321 @@
+/* =========================
+   Fonts & Global Reset
+========================= */
+@font-face {
+  font-family: 'Sublima';
+  src: url(fonts/Sublima-ExtraBold.otf);
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  color: white;
+  font-family: "Sublima", sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  background: radial-gradient(circle at top left, #fda085 0%, #d18cb8 30%, #a18cd1 60%, #8bafd0 100%);
+  background-repeat: no-repeat;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+p { text-wrap: pretty; }
+h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
+
+hr {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#root, #__next {
+  isolation: isolate;
+}
+
+.error { font-size: 15px; }
+
+/* =========================
+   Header & Navigation
+========================= */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1.25rem;
+}
+
+.navBar {
+  display: flex;
+  gap: 5px;
+}
+
+.navigation {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: transparent;
+  transition: background 0.25s ease-in-out;
+  font-size: 1.5em;
+  color: white;
+}
+
+.navigation:hover,
+#tasks.navigation {
+  background: #785da180 !important;
+}
+
+#title {
+  font-size: 2.75rem;
+}
+
+#authors {
+  font-size: 1.2rem;
+  text-align: right;
+}
+
+/* =========================
+   Task Categories & Status
+========================= */
+.categories {
+  position: fixed;
+  display: flex;
+  flex: 1;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  top: 21vh;
+  left: 5vw;
+  width: 90vw;
+  max-width: 100%;
+}
+
+.status {
+  flex-direction: column;
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  padding: 1.25rem;
+  border-radius: 20px;
+  background: rgba(252, 218, 240, 0.556);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.status .title {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  padding: 5px 20px;
+  border-radius: 50px;
+  font-size: 1.5rem;
+  color: white;
+  background: rgba(103, 56, 83, 0.47);
+}
+
+.list-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding-right: 5px;
+  max-height: 600px;
+}
+
+.list-container::-webkit-scrollbar { width: 6px; }
+.list-container::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* =========================
+   Task Cards
+========================= */
+.task-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 0.9375rem;
+  padding: 0.9375rem;
+  border-radius: 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.6);
+  color: #333;
+  transition: background 0.3s;
+}
+
+.task-card.add-task {
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px dashed #999;
+}
+
+.task-card.add-task:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: #666;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: gray;
+  opacity: 0.7;
+}
+
+/* =========================
+   Task Options & Menus
+========================= */
+.task-options { display: inline-block; }
+
+.options-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.options-btn:hover {
+  background: rgba(139, 93, 126, 0.24);
+  border-radius: 10px;
+}
+
+.options-menu,
+.status-menu {
+  display: none;
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  list-style: none;
+  padding: 5px 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.options-menu li,
+.status-menu li {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.options-menu li:hover,
+.status-menu li:hover {
+  background: #f0f0f0;
+}
+
+.move-task:hover .status-menu { display: block; }
+
+/* =========================
+   Modal / Popup
+========================= */
+.form {
+  display: none; /* hidden until active */
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(3px);
+  background: rgba(0,0,0,0.4);
+}
+
+.pop-up {
+  position: relative;
+  width: 90%;
+  max-width: 400px;
+  padding: 1.25rem 1.875rem;
+  border-radius: 12px;
+  text-align: center;
+  background: #fff;
+  color: black;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.pop-up h2 {
+  margin-bottom: 15px;
+  text-align: center;
+  color: #4cafef;
+}
+
+.pop-up label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: left;
+}
+
+.pop-up input,
+.pop-up select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.pop-up button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #4cafef;
+  transition: background 0.25s ease-in-out;
+}
+
+.pop-up button:hover {
+  background: #379edc;
+}
+
+/* Close Button */
+.close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 20px;
+  cursor: pointer;
+  color: black;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.close:hover {
+  background: rgba(125, 62, 97, 0.15);
+}

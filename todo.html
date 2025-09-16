@@ -1,0 +1,67 @@
+<!--Need pa ng delete task, edit task, mark as done, data persist even magrefresh-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ToDo List</title>
+  <link rel="stylesheet" href="todoStyle.css">
+</head>
+<body>
+  <header>
+    <div class="task-card add-task"> Add Task</div>
+  </header>
+
+  <div class="categories">
+
+    <div class="status pending">
+      <div class="title">Pending</div>
+      <div class="list-container">
+      </div>
+    </div>
+
+    <div class="status ongoing">
+      <div class="title">On Going</div>
+      <div class="list-container">
+      </div>
+    </div>
+
+    <div class="status done">
+      <div class="title">Done</div>
+      <div class="list-container">
+      </div>
+    </div>
+    
+  </div>
+
+  <form id="addTaskForm" method="post" class="form">
+    <div class="pop-up">
+      <span id="closePopUp" class="close"></span>
+      <h2>Add Task</h2>
+      <label for="taskName">Task Name:</label>
+      <input type="text" name="title" id="taskName" placeholder="Task Name" required />
+      <span id="nameError" class="error"></span><br>
+      <label for="dueDate">Due Date:</label>
+      <input type="date" name="deadline" id="dueDate" required />
+      <label for="dueTime">Due Time:</label>
+      <input type="time" name="duetime" id="dueTime" required />
+      <label for="kind">Choose what kind of Task:</label>
+        <select name="task" id="task">
+        <option value="Pending">Pending</option>
+        <option value="OnGoing">OnGoing</option>
+        <option value="Done">Done</option>
+        </select>
+      <label for="priority">Choose priority of Task:</label>
+        <select name="priority" id="priority">
+        <option value="Important">Important</option>
+        <option value="Mid">Mid</option>
+        <option value="Easy">Ez</option>
+        </select>
+      <button type="submit" id="saveTask">Add Task</button>
+    </div>
+  </form>
+
+  <!--<div class="event-container"></div>-->
+  <script src="taskScript.js"></script>
+
+</body>
+</html>
