@@ -4,64 +4,69 @@
 <head>
   <meta charset="UTF-8">
   <title>ToDo List</title>
-  <link rel="stylesheet" href="todoStyle.css">
+ <link rel="stylesheet" href="{{ url_for('static', filename='todoStyle.css')}}">
 </head>
+
 <body>
-  <header>
-    <div class="task-card add-task"> Add Task</div>
-  </header>
+  <div class = "sidebar">
+    <h1>To-Do List</h1>
+    <button class="add-task">+ Add Task</button>
+  </div>
 
   <div class="categories">
 
     <div class="status pending">
       <div class="title">Pending</div>
-      <div class="list-container">
-      </div>
+      <div class="list-container" id="pendingTaks"></div>
     </div>
 
     <div class="status ongoing">
       <div class="title">On Going</div>
-      <div class="list-container">
-      </div>
+      <div class="list-container" id="ongoingTaks"></div>
     </div>
 
     <div class="status done">
       <div class="title">Done</div>
-      <div class="list-container">
-      </div>
+      <div class="list-container" id="doneTaks"></div>
     </div>
     
   </div>
 
-  <form id="addTaskForm" method="post" class="form">
+  <form id="addTaskForm" class="form">
     <div class="pop-up">
       <span id="closePopUp" class="close"></span>
       <h2>Add Task</h2>
+
       <label for="taskName">Task Name:</label>
       <input type="text" name="title" id="taskName" placeholder="Task Name" required />
       <span id="nameError" class="error"></span><br>
+
       <label for="dueDate">Due Date:</label>
       <input type="date" name="deadline" id="dueDate" required />
+
       <label for="dueTime">Due Time:</label>
       <input type="time" name="duetime" id="dueTime" required />
-      <label for="kind">Choose what kind of Task:</label>
+
+      <label for="kind">Status of Task:</label>
         <select name="task" id="task">
-        <option value="Pending">Pending</option>
-        <option value="OnGoing">OnGoing</option>
-        <option value="Done">Done</option>
+          <option value="pending">Pending</option>
+          <option value="ongoing">OnGoing</option>
+          <option value="done">Done</option>
         </select>
-      <label for="priority">Choose priority of Task:</label>
+
+      <label for="priority">Priority of Task:</label>
         <select name="priority" id="priority">
-        <option value="Important">Important</option>
-        <option value="Mid">Mid</option>
-        <option value="Easy">Ez</option>
+          <option value="important">Important</option>
+          <option value="mid">Mid</option>
+          <option value="easy">Ez</option>
         </select>
+
       <button type="submit" id="saveTask">Add Task</button>
     </div>
   </form>
 
   <!--<div class="event-container"></div>-->
-  <script src="taskScript.js"></script>
+<script src="{{ url_for('static', filename='taskScript.js') }}"></script>
 
 </body>
 </html>
