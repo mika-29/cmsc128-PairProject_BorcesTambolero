@@ -17,8 +17,20 @@ def index():
 # Get all tasks
 @app.route("/tasks", methods=["GET"])
 def get_tasks():
+    sort_by = request.args.get("sort", "date_added")  # default sort
+    
+    valid_sorts = {
+        "date_added": "id DESC",        # newest first (id = auto increment)
+        "deadline": "deadline ASC",     # soonest deadline first
+        "priority": """CASE priority
+                          WHEN 'important' THEN 1
+                          WHEN 'mid'    THEN 2
+                          WHEN 'easy'       THEN 3
+                       END ASC"""  # important first, then normal, then low
+    }
+    order_clause = valid_sorts.get(sort_by, "id DESC")
     conn = get_db_connection()
-    tasks = conn.execute("SELECT * FROM tasks").fetchall()
+    tasks = conn.execute(f"SELECT * FROM tasks ORDER BY {order_clause}").fetchall()
     conn.close()
     return jsonify([dict(task) for task in tasks])  # convert each row into a dict
 

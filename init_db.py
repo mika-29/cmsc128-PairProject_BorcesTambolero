@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     deadline TEXT,
     duetime TEXT,
     status TEXT CHECK(status IN ('pending', 'ongoing', 'done')) DEFAULT 'pending',
-    priority TEXT CHECK(priority IN ('important','mid','easy')) DEFAULT 'easy'
+    priority TEXT CHECK(priority IN ('important','mid','easy')) DEFAULT 'easy',
+    created_at TEXT DEFAULT (datetime('now', 'localtime'))
 );
 """)
 
