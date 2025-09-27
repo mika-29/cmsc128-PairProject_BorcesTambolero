@@ -66,6 +66,44 @@ a {
 /* =========================
    Header & Navigation
 ========================= */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 220px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+}
+
+.sidebar h1 {
+  font-size: 1.8rem;
+  color: #fff;
+}
+
+.sidebar .add-task {
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.sidebar .add-task:hover {
+  background: #f8f8f8;
+  transform: translateY(-2px);
+}
+
 header {
   display: flex;
   justify-content: space-between;
@@ -113,8 +151,9 @@ header {
   padding: 1.25rem;
   top: 21vh;
   left: 5vw;
-  width: 90vw;
+  width: 85vw;
   max-width: 100%;
+  margin-left: 150px;
 }
 
 .status {
@@ -171,6 +210,29 @@ header {
   transition: background 0.3s;
 }
 
+.task-card.priority-important {
+  border-left: 6px solid #e74c3c; /* Red = Important */
+}
+
+.task-card.priority-mid {
+  border-left: 6px solid #f1c40f; /* Yellow = Mid */
+}
+
+.task-card.priority-easy {
+  border-left: 6px solid #2ecc71; /* Green = Easy */
+}
+
+.task-deadline {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fff;
+  background: #4cafef;
+  border-radius: 6px;
+}
+
 .task-card.add-task {
   justify-content: center;
   font-weight: bold;
@@ -190,10 +252,22 @@ header {
   opacity: 0.7;
 }
 
+.overdue {
+  color: red;
+  font-weight: bold;
+}
+
+.near-deadline {
+  color: orange;
+  font-weight: bold;
+}
+
 /* =========================
    Task Options & Menus
 ========================= */
-.task-options { display: inline-block; }
+.task-options { 
+  display: inline-block; 
+}
 
 .options-btn {
   background: none;
@@ -234,7 +308,13 @@ header {
   background: #f0f0f0;
 }
 
-.move-task:hover .status-menu { display: block; }
+.options-menu.show {
+  display: block;
+}
+
+.move-task:hover .status-menu { 
+  display: block; 
+}
 
 /* =========================
    Modal / Popup
