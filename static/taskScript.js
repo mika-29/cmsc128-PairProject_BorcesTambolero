@@ -14,13 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
   let editingTask = null;   
 
   // ====== Rendering Tasks ======
-  async function loadTasks() {
-    const res = await fetch("/tasks");
+  async function loadTasks(sortBy = "date_added") {
+    const res = await fetch(`/tasks?sort=${sortBy}`);
     const tasks = await res.json();
     renderTasks(tasks);
+    setSortDropdown(sortBy);
   }
 
   function renderTasks(tasks) {
+    //tasks.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
     document.querySelectorAll(".list-container").forEach(c => (c.innerHTML = ""));
 
     tasks.forEach(task => {
@@ -37,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       taskCard.dataset.deadline = task.deadline || "";
       taskCard.dataset.duetime = task.duetime || "";
       taskCard.dataset.priority = task.priority;
+      taskCard.dataset.createdAt = task.createdAt || "";
 
       taskCard.innerHTML = `
         <div class="task-content">
@@ -64,6 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function setSortDropdown(value) {
+    const dropdown = document.getElementById("sort");
+    if (dropdown) dropdown.value = value;
+  }
+
   async function handleSaveTask(e) {
     e.preventDefault();
 
@@ -89,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(taskData),
       });
     } else {
+      taskData.createdAt = new Date().toISOString();
       // add new
       await fetch("/tasks", {
         method: "POST",
@@ -136,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return formatted;
   }
+
   // ====== Handle Task Options ======
   async function handleTaskOptions(e) {
     if (e.target.classList.contains("options-btn")) {
@@ -209,6 +219,15 @@ document.addEventListener("DOMContentLoaded", () => {
   closeBtn.addEventListener("click", closeForm);
   saveBtn.addEventListener("click", handleSaveTask);
   document.addEventListener("click", handleTaskOptions);
+
+  // Sidebar sort dropdown
+  document.getElementById("sortForm").addEventListener("change", function (e) {
+    const sortValue = e.target.value;
+    // reload tasks based on selected sort
+    loadTasks(sortValue);
+  });
+
+
 
   // ====== Initial Load ======
   loadTasks();
