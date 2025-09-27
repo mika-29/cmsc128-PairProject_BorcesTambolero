@@ -157,13 +157,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // DELETE task
     if (e.target.classList.contains("delete-task")) {
       const task = e.target.closest(".task-card");
-      const id = task.dataset.id;
+      const id = task.dataset.id; 
 
       if (confirm("Are you sure you want to delete this task?")) {
-        await fetch(`/tasks/${id}`, { method: "DELETE" });
-        loadTasks();
-      }
-    }
+        //Temporarily hide task from UI 
+        task.style.display = "none"; 
+
+        //Show toast and store info 
+        showToast(`Task "${task.dataset.title}" deleted`, { id, element: task, title: task.dataset.title, }); 
+    } 
+  }
 
     // EDIT task
     if (e.target.classList.contains("edit-task")) {
@@ -231,4 +234,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ====== Initial Load ======
   loadTasks();
+
+  //=====Toast Logic=====
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toast-message");
+  const undoBtn = document.getElementById("undo-btn"); 
+
+  let deleteTimeout = null;
+  let pendingDelete = null; //holds the task waiting for permanent deletion 
+
+    function showToast(message, task) {
+      toastMessage.textContent = message;
+      toast.classList.remove("hidden");
+
+    // Clear previous timeout if exists
+    if (deleteTimeout) clearTimeout(deleteTimeout);
+
+    // Store task info to restore on undo
+    pendingDelete = task;
+
+    // Auto-hide after 5s and permanently delete
+    deleteTimeout = setTimeout(async () => {
+      if (pendingDelete) {
+        await fetch(`/tasks/${pendingDelete.id}`, { method: "DELETE" });
+        pendingDelete = null;
+        loadTasks();
+      }
+      toast.classList.add("hidden");
+    }, 5000);
+  }
+
+  undoBtn.addEventListener("click", () => {
+    if (pendingDelete) {
+      // Restore tasks visually
+      pendingDelete.element.style.display = ""; 
+      pendingDelete = null;
+    }
+    if (deleteTimeout) clearTimeout(deleteTimeout);
+    toast.classList.add("hidden");
+  });
 });

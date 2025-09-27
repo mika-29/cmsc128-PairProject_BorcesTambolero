@@ -23,8 +23,8 @@ def get_tasks():
         "date_added": "id DESC",        # newest first (id = auto increment)
         "deadline": "deadline ASC",     # soonest deadline first
         "priority": """CASE priority
-                          WHEN 'important' THEN 1
-                          WHEN 'mid'    THEN 2
+                          WHEN 'important'  THEN 1
+                          WHEN 'mid'        THEN 2
                           WHEN 'easy'       THEN 3
                        END ASC"""  # important first, then normal, then low
     }
