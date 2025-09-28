@@ -26,7 +26,7 @@ body {
   font-family: "Sublima", sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  background: radial-gradient(circle at top left, #fda085 0%, #d18cb8 30%, #a18cd1 60%, #8bafd0 100%);
+  background: #222531;
   background-repeat: no-repeat;
 }
 
@@ -92,7 +92,7 @@ a {
   font-weight: bold;
   border: none;
   border-radius: 8px;
-  background: #fff;
+  background: #beefe8;
   color: #444;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -100,13 +100,13 @@ a {
 }
 
 .sidebar .add-task:hover {
-  background: #f8f8f8;
+  background: #e6fffb;
   transform: translateY(-2px);
 }
 
 .sort-section {
   padding: 15px;
-  background: #f7f7f7;   /* light background */
+  background: #beefe8;  /* light background */
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -121,14 +121,14 @@ a {
 
 .sort-option {
   display: block;
-  margin: 8px 0;
+  margin: px 0;
   font-size: 14px;
   color: #444;
   cursor: pointer;
 }
 
 .sort-option input[type="radio"] {
-  accent-color: #007bff; /* modern browsers: blue color */
+  accent-color: #272f38; /* modern browsers: blue color */
   margin-right: 8px;
   cursor: pointer;
 }
@@ -194,7 +194,7 @@ header {
   height: 70vh;
   padding: 1.25rem;
   border-radius: 20px;
-  background: rgba(252, 218, 240, 0.556);
+  background: #6d7185;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
@@ -203,10 +203,12 @@ header {
   top: -60px;
   left: 0;
   padding: 5px 20px;
-  border-radius: 50px;
+  border-radius: 20px;
   font-size: 1.5rem;
-  color: white;
-  background: rgba(103, 56, 83, 0.47);
+  color: black;
+  background: #99e1d7;
+  border-style: solid;
+  border-color:  #75b4ac;;
 }
 
 .list-container {
@@ -375,7 +377,7 @@ header {
 .pop-up h2 {
   margin-bottom: 15px;
   text-align: center;
-  color: #4cafef;
+  color: rgb(15, 15, 15);
 }
 
 .pop-up label {
@@ -405,12 +407,12 @@ header {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  background: #4cafef;
+  background: #66cdbe;
   transition: background 0.25s ease-in-out;
 }
 
 .pop-up button:hover {
-  background: #379edc;
+  background: #50a89b;
 }
 
 /* Close Button */
