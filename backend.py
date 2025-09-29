@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 def get_db_connection():
     conn = sqlite3.connect("todo.db")
-    conn.row_factory = sqlite3.Row  # lets us access rows like dictionaries
+    conn.row_factory = sqlite3.Row  # lets us access rows like dictionaries  task["title"] instead of task[1]
     return conn
 
 # Homepage (renders frontend)
@@ -15,7 +15,7 @@ def index():
 
 
 # Get all tasks
-@app.route("/tasks", methods=["GET"])
+@app.route("/tasks", methods=["GET"])  
 def get_tasks():
     sort_by = request.args.get("sort", "date_added")  # default sort
     
@@ -32,11 +32,11 @@ def get_tasks():
     conn = get_db_connection()
     tasks = conn.execute(f"SELECT * FROM tasks ORDER BY {order_clause}").fetchall()
     conn.close()
-    return jsonify([dict(task) for task in tasks])  # convert each row into a dict
+    return jsonify([dict(task) for task in tasks])  # convert each row into a dict   /return JSON so frontend can use 
 
 
 # Add a new task
-@app.route("/tasks", methods=["POST"])
+@app.route("/tasks", methods=["POST"])   
 def add_task():
     data = request.get_json()
 
@@ -82,7 +82,7 @@ def update_task(task_id):
     query = f"UPDATE tasks SET {', '.join(fields)} WHERE id=?"
     values.append(task_id)
 
-    conn = get_db_connection()
+    conn = get_db_connection()    
     conn.execute(query, tuple(values))
     conn.commit()
     conn.close()

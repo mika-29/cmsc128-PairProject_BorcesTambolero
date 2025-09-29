@@ -13,9 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let editingTask = null;   
 
-  // ====== Rendering Tasks ======
+  // ====== Rendering Tasks ======       //fetches tasks from backend and sends them to renderTasks 
   async function loadTasks(sortBy = "date_added") {
-    const res = await fetch(`/tasks?sort=${sortBy}`);
+    const res = await fetch(`/tasks?sort=${sortBy}`);          //gastorya sa backend, GET /tasks 
     const tasks = await res.json();
     renderTasks(tasks);
     setSortDropdown(sortBy);
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     //tasks.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
     document.querySelectorAll(".list-container").forEach(c => (c.innerHTML = ""));
 
-    tasks.forEach(task => {
+    tasks.forEach(task => {                            //builds a task card and puts it in the correct status column 
       const targetColumn = document.querySelector(
         `.status.${task.status} .list-container`
       );
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dropdown) dropdown.value = value;
   }
 
-  async function handleSaveTask(e) {
+  async function handleSaveTask(e) {                  //handles form submission (adding or editing taks)
     e.preventDefault();
 
     const taskData = {
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (editingTask) {
       const id = editingTask.dataset.id;
-      await fetch(`/tasks/${id}`, {
+      await fetch(`/tasks/${id}`, {         //PUT request, updates data 
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       taskData.createdAt = new Date().toISOString();
       // add new
-      await fetch("/tasks", {
+      await fetch("/tasks", {              //POST request, adds database 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
@@ -110,11 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
     taskNameInput.focus();
 
     closeForm();
-    loadTasks();
+    loadTasks();         //reload UI 
   }
 
-  function formatDueDate(dateStr, timeStr, status) {
-    if (!dateStr) return ""; // no deadline
+  function formatDueDate(dateStr, timeStr, status) {             //makes deadlines readable and applies warnings 
+    if (!dateStr) return "No deadline set"; // no deadline
 
     const deadline = new Date(`${dateStr}T${timeStr || "00:00"}`);
     const now = new Date();
@@ -147,8 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ====== Handle Task Options ======
-  async function handleTaskOptions(e) {
-    if (e.target.classList.contains("options-btn")) {
+  async function handleTaskOptions(e) {            //edit,delete,change status 
+    if (e.target.classList.contains("options-btn")) { //toggle menu 
       const menu = e.target.nextElementSibling; // the ul.options-menu
       menu.classList.toggle("show");
       return; // stop here so it doesn’t trigger other actions
@@ -189,17 +189,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const task = e.target.closest(".task-card");
       const id = task.dataset.id;
 
-      await fetch(`/tasks/${id}`, {
+      await fetch(`/tasks/${id}`, {         //PUT request for status 
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus }),      //object into JSON string to send into backend 
       });
 
       loadTasks();
     }
   }
   // ====== Form Controls ======
-  function openForm(isEdit = false) {
+  function openForm(isEdit = false) {             //popup the hidden form "flex" 
     form.style.display = "flex";
 
     if (!isEdit) {
@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     form.style.display = "none";
   }
 
-  // ====== Event Listeners ======
+  // ====== Event Listeners ====== for buttons to work 
   addButton.addEventListener("click", () => openForm(false));
   closeBtn.addEventListener("click", closeForm);
   saveBtn.addEventListener("click", handleSaveTask);
@@ -256,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Auto-hide after 5s and permanently delete
     deleteTimeout = setTimeout(async () => {
       if (pendingDelete) {
-        await fetch(`/tasks/${pendingDelete.id}`, { method: "DELETE" });
+        await fetch(`/tasks/${pendingDelete.id}`, { method: "DELETE" });    //DELETE request 
         pendingDelete = null;
         loadTasks();
       }

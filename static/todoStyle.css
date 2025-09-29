@@ -87,6 +87,12 @@ a {
   color: #fff;
 }
 
+.sidebar h2 {
+  margin-top: -40px;
+  font-size: 1.6rem;
+  color: #fff;
+}
+
 .sidebar .add-task {
   padding: 0.75rem 1.5rem;
   font-weight: bold;

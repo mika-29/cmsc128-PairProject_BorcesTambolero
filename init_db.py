@@ -1,7 +1,7 @@
 import sqlite3
 
-conn = sqlite3.connect("todo.db")
-cursor = conn.cursor()
+conn = sqlite3.connect("todo.db")   #manages database 
+cursor = conn.cursor()    #leads you send sql commands to the database "middleman" / runs sql statements 
 
 # create table
 cursor.execute("""
@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 """)
 
-conn.commit()
-conn.close()
+conn.commit()   #makes sure changes are saved 
+conn.close()    #prevents memory leaks 
