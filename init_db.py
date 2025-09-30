@@ -1,7 +1,7 @@
 import sqlite3
 
 conn = sqlite3.connect("todo.db")   #manages database 
-cursor = conn.cursor()    #leads you send sql commands to the database "middleman" / runs sql statements 
+cursor = conn.cursor()              #leads you send sql commands to the database "middleman" / runs sql statements 
 
 # create table
 cursor.execute("""

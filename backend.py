@@ -48,8 +48,6 @@ def add_task():
     conn.commit()
     conn.close()
 
-    return jsonify({"message": "Task added!"}), 201
-
 
 # Update an existing task
 @app.route("/tasks/<int:task_id>", methods=["PUT"])
@@ -75,9 +73,6 @@ def update_task(task_id):
         fields.append("priority=?")
         values.append(data["priority"])
 
-    if not fields:
-        return jsonify({"error": "No valid fields provided"}), 400
-
     # Build query dynamically
     query = f"UPDATE tasks SET {', '.join(fields)} WHERE id=?"
     values.append(task_id)
@@ -87,7 +82,6 @@ def update_task(task_id):
     conn.commit()
     conn.close()
 
-    return jsonify({"message": "Task updated!"})
 
 # Delete a task
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
@@ -98,8 +92,6 @@ def delete_task(task_id):
     cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
     conn.commit()
     conn.close()
-
-    return jsonify({"message": f"Task {task_id} deleted!"})
 
 
 if __name__ == "__main__":

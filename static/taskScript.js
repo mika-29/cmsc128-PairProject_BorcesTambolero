@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ====== Element References ======
-  const addButton       = document.querySelector(".add-task");
+  // ====== Element References ====== (delegate)
+  const addButton       = document.querySelector(".add-task");  
   const form            = document.getElementById("addTaskForm");
   const closeBtn        = document.getElementById("closePopUp");
   const saveBtn         = document.getElementById("saveTask");
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let editingTask = null;   
 
-  // ====== Rendering Tasks ======       //fetches tasks from backend and sends them to renderTasks 
+  // ====== Rendering Tasks ======                              //fetches tasks from backend and sends them to renderTasks 
   async function loadTasks(sortBy = "date_added") {
     const res = await fetch(`/tasks?sort=${sortBy}`);          //gastorya sa backend, GET /tasks 
     const tasks = await res.json();
@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="task-content">
           <strong class="${task.status === "done" ? "completed" : ""}">${task.title}</strong><br>
           <small>Due: ${formatDueDate(task.deadline, task.duetime, task.status)}</small>
+          <br>
+          <small class="created-date">Created: ${new Date(task.created_at).toLocaleString()}</small>
         </div>
         <div class="task-options">
           <button class="options-btn">⋮</button>
