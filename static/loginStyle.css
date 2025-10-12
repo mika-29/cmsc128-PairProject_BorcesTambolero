@@ -1,0 +1,140 @@
+@font-face {
+  font-family: 'Sublima';
+  src: url(fonts/Sublima-ExtraBold.otf);
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+
+@media (max-width: 480px) {
+    header {
+        margin-top: 30px;
+    }
+
+    .form-box {
+        width: 90%;
+        padding: 30px 20px;
+    }
+
+    #title {
+        font-size: 2rem;
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #21252c, #292e2d);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-top: 50px;
+    color: #fff;
+}
+
+#title {
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+#name {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* Container and Form Box */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 75vh;
+    width: 100%;
+}
+
+.form-box {
+    background: #ffffff;
+    padding: 40px 35px;
+    border-radius: 20px;
+    width: 350px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+.form-box h2 {
+    font-size: 1.8rem;
+    color: #28413d;
+    margin-bottom: 10px;
+}
+
+.form-box p {
+    color: #6b7280;
+    margin-bottom: 25px;
+}
+
+/* Input Fields */
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0px 0px 5px rgba(59, 130, 246, 0.3);
+}
+
+/* Button */
+button {
+    background: #53a499;
+    color: #fff;
+    border: none;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #497670;
+}
+
+/* Links Below */
+.links {
+    margin-top: 20px;
+}
+
+.links a {
+    display: block;
+    font-size: 0.9rem;
+    color: #0e7164;
+    text-decoration: none;
+    margin-bottom: 5px;
+    transition: 0.2s;
+}
+
+.links a:hover {
+    text-decoration: underline;
+    color: #0a3b35;
+}
+
