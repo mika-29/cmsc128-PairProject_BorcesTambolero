@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>To-Do To-Be | Update Profile</title>
+        <link rel="stylesheet" type="text/css" href="../static/detailsStyle.css">
+    </head>
+    <body>
+        <header>
+        <h1 id="title">To-Do</h1>
+        <h2 id="title">To-Be</h2>
+        </header>
+
+        <div class="container">
+            <h2>Update Profile Details</h2>
+            <p>Secure your account and update your details.</p>
+
+            <form action="/update_profile" method="POST">
+                <input type="text" name="name" id="name" placeholder="New User Name" required> 
+                <input type="email" name="email" id="email" placeholder="New Email address" required>
+
+                <input type="password" name="current_password" id="current_password" placeholder="Current Password" required>  <!--Dapat hindi to tatanggapin if hindi equal sa current password-->
+                <input type="password" name="new_password" id="new_password" placeholder="New Password" required>
+                <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm New Password" required>
+
+                <button type="submit">Update Details</button>
+            </form>
+        </div>
+    </body>
+</html>
