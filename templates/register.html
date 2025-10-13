@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do To-Be LogIn</title>
-    <link rel="stylesheet" type="text/css" href="../static/loginStyle.css">
+    <title>To-Do To-Be SignUp</title>
+    <link rel="stylesheet" type="text/css" href="../static/registerStyle.css">
 </head>
 <body>
     <header>
@@ -14,20 +14,19 @@
 
     <div class="container">
         <div class="form-box">
-            <h2>Welcome Back!</h2>
-            <p>Log in to continue your studies</p>
+            <h2>Get started!</h2>
+            <p>Keep track of your tasks</p>
 
-            <form action="/login" method="POST">
+            <form action="/signup" method="POST">
                 <input type="email" name="email" id="email" placeholder="Email address" required>
                 <input type="password" name="password" id="password" placeholder="Password" required>
+                <input type="confirm" name="confirm" id="confirm" placeholder="Confirm Password" required>
 
-                <button type="submit">Login</button>
+                <button type="submit">Sign Up</button>
             </form>
 
             <div class="links">
-                <a href="register.html">Create an account</a>
-                <a href="forgot_password.html">Forgot password?</a>
-                <a href="change_password.html">Change password</a>
+                <a href="login.html">Already have an account? Log in!</a>
             </div>
         </div>
     </div>
