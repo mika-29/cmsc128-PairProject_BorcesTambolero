@@ -46,3 +46,33 @@ def login():
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
 
+@app.route('/signup', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('create.html')
+    
+    name = request.form.get('name', '').strip()
+    email = request.form.get('email', '').strip()
+    pwd = request.form.get('password', '').strip()
+
+    if not name or not email or not pwd:
+        return render_template('register.html', error="Please fill out all fields.")
+
+    conn = get_db_connection()
+    existing_user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+    if existing_user:
+        conn.close()
+        return render_template('register.html', error="An account with that email already exists.")
+
+    conn.execute("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", (name, email, pwd))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('login'))
+
+@app.route('/dashboard')
+def dashboard():
+    if 'u_id' not in session:
+        return redirect(url_for('login'))
+    return f"Welcome, {session['name']}!" 

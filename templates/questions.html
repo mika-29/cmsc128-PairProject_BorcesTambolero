@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do To-Be | Account Security</title>
+    <link rel="stylesheet" type="text/css" href="../static/questionStyle.css">
+</head>
+<body>
+    <header>
+        <h1 id="title">To-Do</h1>
+        <h2 id="title">To-Be</h2>
+    </header>
+
+    <div class="container">
+        <div class="form-box">
+            <h2>Keep Your Account Secure!</h2>
+            <p>Please answer these security questions. They’ll help verify your identity if you forget your password.</p>
+
+            <form action="/secure" method="POST"> 
+                <div class="security-question">
+                 <label for="q1">Security Question 1</label>
+                    <select name="question1" id="q1" required>
+                        <option value="">-- Select a question --</option>
+                        <option value="pet">What was the name of your first pet?</option>
+                        <option value="school">What is the name of your elementary school?</option>
+                        <option value="city">In what city were you born?</option>
+                        <option value="nickname">What is your childhood nickname?</option>
+                    </select>
+                    <input type="text" name="answer1" id="ans1" placeholder="Your Answer" required>
+                </div>
+
+                <div class="security-question">
+                    <label for="q2">Security Question 2</label>
+                    <select name="question2" id="q2" required>
+                        <option value="">-- Select a question --</option>
+                        <option value="teacher">What is the name of your favorite teacher?</option>
+                        <option value="movie">What is your favorite movie?</option>
+                        <option value="friend">What is the name of your best friend in high school?</option>
+                        <option value="book">What is your favorite book?</option>
+                    </select>
+                    <input type="text" name="answer2" id="ans2" placeholder="Your Answer" required>
+                </div>
+
+                <div class="security-question">
+                    <label for="q3">Security Question 3</label>
+                    <select name="question3" id="q3" required>
+                        <option value="">-- Select a question --</option>
+                        <option value="car">What is your favorite song?</option>
+                        <option value="dream">What is your dream job?</option>
+                        <option value="color">What is your favorite color?</option>
+                        <option value="dish">What is your favorite food?</option>
+                    </select>
+                    <input type="text" name="answer3" id="ans3" placeholder="Your Answer" required>
+                </div>
+
+                <button type="submit">Save Security Info</button>
+            </form>
+
+            <div class="links">
+                <a href="login.html">Already have an account? Log in!</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
