@@ -83,7 +83,6 @@ header {
 }
 
 /* Input Fields */
-input[type="name"],
 input[type="email"],
 input[type="password"] {
     width: 100%;

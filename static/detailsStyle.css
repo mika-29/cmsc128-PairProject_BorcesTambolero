@@ -104,6 +104,26 @@ button:hover {
     color: #093d36;
 }
 
+/* Links Below */
+.links {
+    margin-top: 20px;
+}
+
+.links a {
+    display: block;
+    font-size: 0.9rem;
+    color: #0e7164;
+    text-decoration: none;
+    margin-bottom: 5px;
+    transition: 0.2s;
+}
+
+.links a:hover {
+    text-decoration: underline;
+    color: #0a3b35;
+}
+
+
 /* Responsive */
 @media (max-width: 480px) {
     .container {
