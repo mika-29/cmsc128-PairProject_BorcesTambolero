@@ -7,7 +7,7 @@ app.secret_key = "encrypt_key"
 DATABASE = "user.db"
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect("user.db")
     conn.row_factory = sqlite3.Row  # allows dict-like row access
     return conn
 
@@ -18,22 +18,25 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip()
     pwd = request.form.get('password', '').strip()
 
     if not name or not email or not pwd:
-        return jsonify({"error": "Please enter your name, email, and password"}), 400
+        return jsonify({"error": "Please enter your name, email, and password"})
     
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE email = ? AND name = ?", (email, name)).fetchone()
     conn.close()
 
     if user is None:
-        return jsonify({"error": "Invalid credentials"}), 401
+        return jsonify({"error": "Invalid credentials"})
 
     if pwd != user['password']:
-        return jsonify({"error": "Invalid name, email, or password"}), 401
+        return jsonify({"error": "Invalid name, email, or password"})
 
     session['u_id'] = user['id']
     session['name'] = user['name']
