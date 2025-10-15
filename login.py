@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = "encrypt_key"
 
 DATABASE = "user.db"
 
@@ -9,6 +10,11 @@ def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row  # allows dict-like row access
     return conn
+
+@app.route("/")
+def index():
+    return render_template("login.html")   
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -33,3 +39,7 @@ def login():
     session['name'] = user['name']
 
     return jsonify({"message": "success"}), 200
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5001)
+
