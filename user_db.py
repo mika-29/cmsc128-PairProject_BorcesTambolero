@@ -1,17 +1,26 @@
 import sqlite3
 
-conn = sqlite3.connect("user.db")   #manages database 
-cursor = conn.cursor()              #leads you send sql commands to the database "middleman" / runs sql statements 
+conn = sqlite3.connect("user.db")
+cursor = conn.cursor()
 
-# create table
+# If table exists, drop it
+cursor.execute("DROP TABLE IF EXISTS users")
+
+# Create new table
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    security_q1 TEXT,
+    security_ans1 TEXT,
+    security_q2 TEXT,
+    security_ans2 TEXT,
+    security_q3 TEXT,
+    security_ans3 TEXT
 );
 """)
 
-conn.commit()   #makes sure changes are saved 
-conn.close()    #prevents memory leaks 
+conn.commit()
+conn.close()
