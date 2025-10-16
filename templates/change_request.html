@@ -13,13 +13,13 @@
     </header>
 
     <div class="container">
-        <h2>Forgot your password?</h2>  
-        <p>Please enter your registered email to reset your password.</p>
+        <h2>You want to Change Details?</h2>  
+        <p>Please enter your registered email to update your details.</p>
 
         <!-- FIX: Proper form structure -->
-        <form action="{{ url_for('forgot_password') }}" method="POST" class="email">
+        <form action="{{ url_for('change_request') }}" method="POST">
             <input type="email" name="email" placeholder="Enter your email" required>
-            <button type="submit">Request Password Change</button>   
+            <button type="submit">Request Details Change</button>   
         </form>
 
         {% if error %}

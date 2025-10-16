@@ -3,19 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do To-Be | Change Password</title>
+    <title>To-Do To-Be | Change Details</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='passwordStyle.css') }}">
 </head>
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="notification {{ category }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-
 <body>
     <header>
         <h1 id="title">To-Do</h1>
@@ -23,10 +13,10 @@
     </header>
 
     <div class="container">
-        <h2>Change Password</h2>
-        <p>Please answer your security questions and set a new password.</p>
+        <h2>Answer Questions</h2>
+        <p>Answer questions first before you can update your details.</p>
 
-        <form action="{{ url_for('change_password') }}" method="POST">
+        <form action="{{ url_for('question_details') }}" method="POST">
             <div class="form-group">
                 <label for="ans1">{{ q1 }}</label>
                 <input type="text" name="ans1" id="ans1" required>
@@ -41,12 +31,8 @@
                 <label for="ans3">{{ q3 }}</label>
                 <input type="text" name="ans3" id="ans3" required>
             </div>
-            
-            <div div class="form-group">
-                <label for="pass-field">New Password</label>
-                <input type="password" name="new_password" id="new_password" placeholder="Enter new password here" required>
-            </div>
-            <button type="submit">Update Password</button>
+
+            <button type="submit">Submit</button>
         </form>
 
         {% if error %}

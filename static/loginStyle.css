@@ -138,3 +138,37 @@ button:hover {
     color: #0a3b35;
 }
 
+.notification {
+    padding: 15px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+
+/* Simple red error message */
+.error {
+    color: #ef4444 !important;             
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 15px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Optional subtle fade-in animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
