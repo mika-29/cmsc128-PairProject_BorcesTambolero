@@ -15,10 +15,6 @@ CREATE TABLE users (
     password TEXT NOT NULL,
     security_q1 TEXT,
     security_ans1 TEXT,
-    security_q2 TEXT,
-    security_ans2 TEXT,
-    security_q3 TEXT,
-    security_ans3 TEXT
 );
 """)
 

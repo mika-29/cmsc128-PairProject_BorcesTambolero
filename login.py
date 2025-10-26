@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, session, redirect, url_for, jsonify, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
 app = Flask(__name__)
@@ -29,18 +30,20 @@ def login():
 
             conn = get_db_connection()
             user = conn.execute(
-                "SELECT * FROM users WHERE email = ? AND password = ?", (email, pwd)
-            ).fetchone()
+                "SELECT * FROM users WHERE email = ?", (email,)).fetchone()
             conn.close()
 
             if user is None:
                 return render_template("login.html", error="Account not found. Please try again.")
 
-            # Login successful → store session
-            session["u_id"] = user["id"]
-            session["name"] = user["name"]
+            if user and check_password_hash(user["password"], pwd):
+                # Login successful → store session  Flask rememebrs who logs in 
+                session["u_id"] = user["id"]
+                session["name"] = user["name"]
 
-            return redirect(url_for("dashboard"))
+                return redirect(url_for("dashboard"))
+            else:
+                return "Invalid username or password"
 
         # GET request → just render login page without error
     return render_template("login.html")
@@ -57,17 +60,15 @@ def signup():
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip().lower()
     pwd = request.form.get("password", "").strip()
+    hashed_password = generate_password_hash(pwd)
 
     # Security question fields
     q1 = request.form.get("question1", "").strip()
     a1 = request.form.get("answer1", "").strip()
-    q2 = request.form.get("question2", "").strip()
-    a2 = request.form.get("answer2", "").strip()
-    q3 = request.form.get("question3", "").strip()
-    a3 = request.form.get("answer3", "").strip()
+    hashed_answer = generate_password_hash(a1) 
 
     # Validation
-    if not (name and email and pwd and q1 and a1 and q2 and a2 and q3 and a3):
+    if not (name and email and pwd and q1 and a1):
         return render_template("register.html", step=2,
                                error="Please complete all security questions.")
 
@@ -81,11 +82,11 @@ def signup():
     conn.execute(
         """
         INSERT INTO users (name, email, password,
-            security_q1, security_ans1, security_q2, security_ans2, security_q3, security_ans3)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            security_q1, security_ans1)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (name, email, pwd,
-         q1, a1, q2, a2, q3, a3)
+        (name, email, hashed_password,
+         q1, hashed_answer)
     )
     conn.commit()
     conn.close()
@@ -137,34 +138,19 @@ def change_password():
         "pet": "What was the name of your first pet?",
         "school": "What is the name of your elementary school?",
         "city": "In what city were you born?",
-        "nickname": "What is your childhood nickname?",
-        "friend": "What is the name of your best friend in high school?",
-        "song": "What is your favorite song?",
-        "teacher":"What is the name of your favorite teacher?",
-        "movie": "What is your favorite movie?",
-        "book": "What is your favorite book?",
-        "dream": "What is your dream job?",
-        "color": "What is your favorite color?",
-        "dish": "What is your favorite food?"
+        "nickname": "What is your childhood nickname?"
     }
 
     q1 = question_map.get(user["security_q1"], user["security_q1"])
-    q2 = question_map.get(user["security_q2"], user["security_q2"])
-    q3 = question_map.get(user["security_q3"], user["security_q3"])
 
     if request.method == "POST":
         ans1 = request.form.get("ans1", "").strip().lower()
-        ans2 = request.form.get("ans2", "").strip().lower()
-        ans3 = request.form.get("ans3", "").strip().lower()
         new_password = request.form.get("new_password", "").strip()
 
-        if (
-            ans1 == user["security_ans1"].lower()
-            and ans2 == user["security_ans2"].lower()
-            and ans3 == user["security_ans3"].lower()
-        ):
+        if (check_password_hash(user["security_ans1"], ans1)):
+            hashed_new_password = generate_password_hash(new_password)
             conn = get_db_connection()
-            conn.execute("UPDATE users SET password = ? WHERE email = ?", (new_password, email))
+            conn.execute("UPDATE users SET password = ? WHERE email = ?", (hashed_new_password, email))
             conn.commit()
             conn.close()
 
@@ -172,10 +158,10 @@ def change_password():
             flash("Password updated successfully! Please log in.", "success")
             return render_template("login.html", message="Password updated successfully! Please log in.")
         else:
-            return render_template("change_password.html", q1=q1, q2=q2, q3=q3,
-                                   error="One or more answers are incorrect.")
+            return render_template("change_password.html", q1=q1,
+                                   error="Your answer is incorrect.")
 
-    return render_template("change_password.html", q1=q1, q2=q2, q3=q3)
+    return render_template("change_password.html", q1=q1)
 
  #-----------------------------
 # CHANGE REQUEST
@@ -221,37 +207,21 @@ def question_details():
         "pet": "What was the name of your first pet?",
         "school": "What is the name of your elementary school?",
         "city": "In what city were you born?",
-        "nickname": "What is your childhood nickname?",
-        "friend": "What is the name of your best friend in high school?",
-        "song": "What is your favorite song?",
-        "teacher":"What is the name of your favorite teacher?",
-        "movie": "What is your favorite movie?",
-        "book": "What is your favorite book?",
-        "dream": "What is your dream job?",
-        "color": "What is your favorite color?",
-        "dish": "What is your favorite food?"
+        "nickname": "What is your childhood nickname?"
     }
 
     q1 = question_map.get(user["security_q1"], user["security_q1"])
-    q2 = question_map.get(user["security_q2"], user["security_q2"])
-    q3 = question_map.get(user["security_q3"], user["security_q3"])
 
     if request.method == "POST":
         ans1 = request.form.get("ans1", "").strip().lower()
-        ans2 = request.form.get("ans2", "").strip().lower()
-        ans3 = request.form.get("ans3", "").strip().lower()
 
-        if (
-            ans1 == user["security_ans1"].lower()
-            and ans2 == user["security_ans2"].lower()
-            and ans3 == user["security_ans3"].lower()
-        ):
+        if (check_password_hash(user["security_ans1"], ans1)):
             return redirect(url_for("change_details"))
         else: 
-            return render_template("question_details.html", q1=q1, q2=q2, q3=q3,
-                                   error="One or more answers are incorrect.")
+            return render_template("question_details.html", q1=q1,
+                                   error="Your answer is incorrect.")
 
-    return render_template("question_details.html", q1=q1, q2=q2, q3=q3)
+    return render_template("question_details.html", q1=q1)
 
 #-----------------------------
 # CHANGE DETAILS
@@ -278,7 +248,7 @@ def change_details():
             return redirect(url_for("login"))
 
         # Check current password
-        if current_password != user["password"]:
+        if not check_password_hash(user["password"], current_password):
             conn.close()
             error = "Current password is incorrect."
             return render_template("change_details.html", error=error)
@@ -290,10 +260,11 @@ def change_details():
             return render_template("change_details.html", error=error)
 
         # Everything is valid → update user details
+        hashed_new_password = generate_password_hash(new_password)
         conn.execute(
             "UPDATE users SET name = ?, email = ?, password = ? WHERE email = ?",
-            (name, new_email, new_password, email)
-        )
+            (name, new_email, hashed_new_password, email)
+            )
         conn.commit()
         conn.close()
 
