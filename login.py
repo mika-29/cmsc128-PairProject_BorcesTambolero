@@ -1,12 +1,9 @@
-from flask import Flask, request, render_template, session, redirect, url_for, jsonify, flash
+from flask import Blueprint, request, render_template, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
-app = Flask(__name__)
-app.secret_key = "encrypt_key"
-
-DATABASE = "user.db"
-
+login_bp = Blueprint("login", __name__)
+DATABASE = "app.db"
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -17,87 +14,73 @@ def get_db_connection():
 # -----------------------------
 # LOGIN ROUTE
 # -----------------------------
-@app.route("/")
+@login_bp.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("login.html")
-
-
-@app.route("/login", methods=["GET","POST"])
-def login():
     if request.method == "POST":
-            email = request.form.get("email", "").strip()
-            pwd = request.form.get("password", "").strip()
+        email = request.form.get("email", "").strip()
+        pwd = request.form.get("password", "").strip()
 
-            conn = get_db_connection()
-            user = conn.execute(
-                "SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-            conn.close()
+        conn = get_db_connection()
+        user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        conn.close()
 
-            if user is None:
-                return render_template("login.html", error="Account not found. Please try again.")
+        if user is None:
+            return render_template("login.html", error="Account not found. Please try again.")
 
-            if user and check_password_hash(user["password"], pwd):
-                # Login successful → store session  Flask rememebrs who logs in 
-                session["u_id"] = user["id"]
-                session["name"] = user["name"]
+        if user and check_password_hash(user["password"], pwd):
+            session["u_id"] = user["id"]
+            session["name"] = user["name"]
+            
+            return redirect(url_for("todo.todo"))  # redirect to your todo page
+        else:
+            return render_template("login.html", error="Invalid email or password.")
 
-                return redirect(url_for("dashboard"))
-            else:
-                return "Invalid username or password"
-
-        # GET request → just render login page without error
     return render_template("login.html")
+
 
 # -----------------------------
 # SIGNUP / REGISTER ROUTE
 # -----------------------------
-@app.route("/signup", methods=["GET", "POST"])
+@login_bp.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "GET":
         return render_template("register.html", step=1)
 
-    # POST request
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip().lower()
     pwd = request.form.get("password", "").strip()
     hashed_password = generate_password_hash(pwd)
 
-    # Security question fields
     q1 = request.form.get("question1", "").strip()
     a1 = request.form.get("answer1", "").strip()
-    hashed_answer = generate_password_hash(a1) 
+    hashed_answer = generate_password_hash(a1)
 
-    # Validation
     if not (name and email and pwd and q1 and a1):
         return render_template("register.html", step=2,
-                               error="Please complete all security questions.")
+                               error="Please complete all fields including security question.")
 
     conn = get_db_connection()
     existing = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
     if existing:
         conn.close()
-        return render_template("register.html", step=1,
-                               error="An account with that email already exists.")
+        return render_template("register.html", step=1, error="An account with that email already exists.")
 
     conn.execute(
         """
-        INSERT INTO users (name, email, password,
-            security_q1, security_ans1)
+        INSERT INTO users (name, email, password, security_q1, security_ans1)
         VALUES (?, ?, ?, ?, ?)
-        """,
-        (name, email, hashed_password,
-         q1, hashed_answer)
-    )
+        """, 
+        (name, email, hashed_password, q1, hashed_answer))
     conn.commit()
     conn.close()
 
-    return redirect(url_for("index"))
+    return redirect(url_for("login.index"))
 
 
 # -----------------------------
 # FORGOT PASSWORD
 # -----------------------------
-@app.route("/forgot_password", methods=["GET", "POST"])
+@login_bp.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
@@ -107,12 +90,12 @@ def forgot_password():
         conn.close()
 
         if user:
-            # store email temporarily in session
+             # store email temporarily in session
             session["reset_email"] = email
-            return redirect(url_for("change_password"))
+            return redirect(url_for("login.change_password"))
         else:
             return render_template("forgot_password.html", error="Email not found.")
-
+        
     # Default GET request — just show the email input page
     return render_template("forgot_password.html")
 
@@ -120,20 +103,19 @@ def forgot_password():
 # -----------------------------
 # CHANGE PASSWORD STEP
 # -----------------------------
-@app.route("/change_password", methods=["GET", "POST"])
+@login_bp.route("/change_password", methods=["GET", "POST"])
 def change_password():
     email = session.get("reset_email")
     if not email:
-        return redirect(url_for("forgot_password"))
+        return redirect(url_for("login.forgot_password"))
 
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
     conn.close()
 
     if not user:
-        return redirect(url_for("forgot_password"))
+        return redirect(url_for("login.forgot_password"))
 
-    # Question map
     question_map = {
         "pet": "What was the name of your first pet?",
         "school": "What is the name of your elementary school?",
@@ -147,7 +129,7 @@ def change_password():
         ans1 = request.form.get("ans1", "").strip().lower()
         new_password = request.form.get("new_password", "").strip()
 
-        if (check_password_hash(user["security_ans1"], ans1)):
+        if check_password_hash(user["security_ans1"], ans1):
             hashed_new_password = generate_password_hash(new_password)
             conn = get_db_connection()
             conn.execute("UPDATE users SET password = ? WHERE email = ?", (hashed_new_password, email))
@@ -156,17 +138,18 @@ def change_password():
 
             session.pop("reset_email", None)
             flash("Password updated successfully! Please log in.", "success")
-            return render_template("login.html", message="Password updated successfully! Please log in.")
+            return redirect(url_for("login.index"))
         else:
             return render_template("change_password.html", q1=q1,
                                    error="Your answer is incorrect.")
 
     return render_template("change_password.html", q1=q1)
 
- #-----------------------------
+
+# -----------------------------
 # CHANGE REQUEST
 # -----------------------------
-@app.route("/change_request", methods=["GET", "POST"])
+@login_bp.route("/change_request", methods=["GET", "POST"])
 def change_request():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
@@ -178,29 +161,28 @@ def change_request():
         if user:
             # store email temporarily in session
             session["reset_email"] = email
-            return redirect(url_for("question_details"))
+            return redirect(url_for("login.question_details"))
         else:
             return render_template("change_request.html", error="Email not found.")
 
     # Default GET request — just show the email input page
     return render_template("change_request.html")
 
-
 # -----------------------------
 # ANSWER QUESTIONS STEP
 # -----------------------------
-@app.route("/question_details", methods=["GET", "POST"])
+@login_bp.route("/question_details", methods=["GET", "POST"])
 def question_details():
     email = session.get("reset_email")
     if not email:
-        return redirect(url_for("change_request"))
+        return redirect(url_for("login.change_request"))
 
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
     conn.close()
 
     if not user:
-        return redirect(url_for("change_request"))
+        return redirect(url_for("login.change_request"))
 
     # Question map
     question_map = {
@@ -216,7 +198,7 @@ def question_details():
         ans1 = request.form.get("ans1", "").strip().lower()
 
         if (check_password_hash(user["security_ans1"], ans1)):
-            return redirect(url_for("change_details"))
+            return redirect(url_for("login.change_details"))
         else: 
             return render_template("question_details.html", q1=q1,
                                    error="Your answer is incorrect.")
@@ -226,12 +208,12 @@ def question_details():
 #-----------------------------
 # CHANGE DETAILS
 #-----------------------------
-@app.route("/change_details", methods=["GET", "POST"])
+@login_bp.route("/change_details", methods=["GET", "POST"])
 def change_details():
 # Get the email of the user from the session (set after security questions)
     email = session.get("reset_email")
     if not email:
-        return redirect(url_for("change_request"))  # or login
+        return redirect(url_for("login.change_request"))  # or login
 
     if request.method == "POST":
         name = request.form.get("name")
@@ -245,7 +227,7 @@ def change_details():
 
         if not user:
             conn.close()
-            return redirect(url_for("login"))
+            return redirect(url_for("login.change_request"))
 
         # Check current password
         if not check_password_hash(user["password"], current_password):
@@ -268,42 +250,19 @@ def change_details():
         conn.commit()
         conn.close()
 
-        # Clear session and redirect to login
+         # Clear session and redirect
         session.pop("reset_email", None)
         flash("Details updated successfully! Please log in.", "success")
-        return render_template("login.html", messsage="Details updated successfully! Please log in.")
+        return redirect(url_for("login.index"))
 
     # GET request → show form
     return render_template("change_details.html")
 
 # -----------------------------
-# USERS ROUTE (VIEW)
+# LOGOUT
 # -----------------------------
-@app.route("/users", methods=["GET"])
-def get_users():
-    sort_by = request.args.get("sort", "id DESC")
-
-    conn = get_db_connection()
-    users = conn.execute(
-        f"SELECT id, name, email, password, security_q1, security_ans1, security_q2, security_ans2, security_q3, security_ans3 FROM users ORDER BY {sort_by}"
-    ).fetchall()
-    conn.close()
-
-    return jsonify([dict(user) for user in users])
-
-
-# -----------------------------
-# DASHBOARD
-# -----------------------------
-@app.route("/dashboard")
-def dashboard():
-    if "u_id" not in session:
-        return redirect(url_for("index"))
-    return f"Welcome, {session['name']}!"
-
-
-# -----------------------------
-# MAIN
-# -----------------------------
-if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+@login_bp.route("/logout")
+def logout():
+    session.clear()
+    flash("You have been logged out.", "info")
+    return redirect(url_for("login.index"))

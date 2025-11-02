@@ -16,7 +16,7 @@
             <h2>Update Profile Details</h2>
             <p>Secure your account and update your details.</p>
 
-            <form action="/change_details" method="POST">
+            <form action="{{ url_for('login.change_details') }}" method="POST">
                 {% if error %}
                     <p class="error">{{ error }}</p>
                 {% endif %}
@@ -31,7 +31,7 @@
                 <button type="submit">Update Details</button>
             </form>
             <div class="links">
-                <a href="/login">Back To Login</a>
+                <a href="{{ url_for('login.index') }}">Back To Login</a>
             </div>
         </div>
     </body>
