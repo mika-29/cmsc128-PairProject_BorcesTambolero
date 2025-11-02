@@ -16,7 +16,7 @@
         <h2>Answer Questions</h2>
         <p>Answer questions first before you can update your details.</p>
 
-        <form action="{{ url_for('question_details') }}" method="POST">
+        <form action="{{ url_for('login.question_details') }}" method="POST">
             <div class="form-group">
                 <label for="ans1">{{ q1 }}</label>
                 <input type="text" name="ans1" id="ans1" required>

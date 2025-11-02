@@ -1,98 +1,58 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Blueprint, render_template, request, session, redirect, url_for, jsonify
 import sqlite3
 
-app = Flask(__name__)
+todo_bp = Blueprint("todo", __name__)
+
+DATABASE = "app.db"
 
 def get_db_connection():
-    conn = sqlite3.connect("todo.db")
-    conn.row_factory = sqlite3.Row  # lets us access rows like dictionaries  task["title"] instead of task[1]
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
     return conn
 
-# Homepage (renders frontend)
-@app.route("/")
-def index():
-    return render_template("todo.html")   # make sure todo.html is in your templates/ folder
+# -------- Todo Page --------
+@todo_bp.route("/todo", methods=["GET", "POST"])
+def todo():
+    if "u_id" not in session:
+        return redirect(url_for("login.index"))
 
+    id = session["u_id"]
+    conn = get_db_connection()
 
-# Get all tasks
-@app.route("/tasks", methods=["GET"])  
+    # Add task
+    if request.method == "POST":
+        title = request.form.get("title")
+        if title:
+            conn.execute("INSERT INTO tasks (id, title, status, priority) VALUES (?, ?, 'pending', 'mid')",
+                         (id, title))
+            conn.commit()
+
+    # Get user tasks
+    tasks = conn.execute("SELECT * FROM tasks WHERE id = ?", (id,)).fetchall()
+    conn.close()
+    return render_template("todo.html", tasks=tasks)
+
+# -------- API to get tasks --------
+@todo_bp.route("/tasks", methods=["GET"])
 def get_tasks():
-    sort_by = request.args.get("sort", "date_added")  # default sort
-    
-    valid_sorts = {
-        "date_added": "id DESC",        # newest first (id = auto increment)
-        "deadline": "deadline ASC",     # soonest deadline first
-        "priority": """CASE priority
-                          WHEN 'important'  THEN 1
-                          WHEN 'mid'        THEN 2
-                          WHEN 'easy'       THEN 3
-                       END ASC"""  # important first, then normal, then low
-    }
-    order_clause = valid_sorts.get(sort_by, "id DESC")
+    if "u_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    id = session["u_id"]
     conn = get_db_connection()
-    tasks = conn.execute(f"SELECT * FROM tasks ORDER BY {order_clause}").fetchall()
+    tasks = conn.execute("SELECT * FROM tasks WHERE id = ?", (id,)).fetchall()
     conn.close()
-    return jsonify([dict(task) for task in tasks])  # convert each row into a dict   /return JSON so frontend can use 
+    return jsonify([dict(task) for task in tasks])
 
-
-# Add a new task
-@app.route("/tasks", methods=["POST"])   
-def add_task():
-    data = request.get_json()
-
-    conn = get_db_connection()
-    conn.execute(
-        "INSERT INTO tasks (title, deadline, duetime, status, priority) VALUES (?, ?, ?, ?, ?)",
-        (data["title"], data["deadline"], data["duetime"], data["status"], data["priority"]),
-    )
-    conn.commit()
-    conn.close()
-
-
-# Update an existing task
-@app.route("/tasks/<int:task_id>", methods=["PUT"])
-def update_task(task_id):
-    data = request.get_json()
-    fields = []
-    values = []
-
-    # Build only the fields that are provided
-    if "title" in data:
-        fields.append("title=?")
-        values.append(data["title"])
-    if "deadline" in data:
-        fields.append("deadline=?")
-        values.append(data["deadline"])
-    if "duetime" in data:
-        fields.append("duetime=?")
-        values.append(data["duetime"])
-    if "status" in data:
-        fields.append("status=?")
-        values.append(data["status"])
-    if "priority" in data:
-        fields.append("priority=?")
-        values.append(data["priority"])
-
-    # Build query dynamically
-    query = f"UPDATE tasks SET {', '.join(fields)} WHERE id=?"
-    values.append(task_id)
-
-    conn = get_db_connection()    
-    conn.execute(query, tuple(values))
-    conn.commit()
-    conn.close()
-
-
-# Delete a task
-@app.route("/tasks/<int:task_id>", methods=["DELETE"])
+# -------- API to delete task --------
+@todo_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
 def delete_task(task_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    if "u_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
 
-    cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    id = session["u_id"]
+    conn = get_db_connection()
+    conn.execute("DELETE FROM tasks WHERE id = ? AND id = ?", (task_id, id))
     conn.commit()
     conn.close()
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return jsonify({"success": True})
