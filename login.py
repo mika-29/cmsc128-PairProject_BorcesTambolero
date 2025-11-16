@@ -2,7 +2,7 @@ from flask import Blueprint, request, render_template, session, redirect, url_fo
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
-login_bp = Blueprint("login", __name__)
+login_bp = Blueprint("login", __name__) #creates basically a module that includes all routes within it so it can be registered in the main app
 DATABASE = "app.db"
 
 def get_db_connection():

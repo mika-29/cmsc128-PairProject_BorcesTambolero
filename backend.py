@@ -23,12 +23,17 @@ def todo():
     if request.method == "POST":
         title = request.form.get("title")
         if title:
-            conn.execute("INSERT INTO tasks (id, title, status, priority) VALUES (?, ?, 'pending', 'mid')",
+            conn.execute("""INSERT INTO tasks (owner_id, title, status, priority) VALUES (?, ?, 'pending', 'mid') """, 
                          (id, title))
             conn.commit()
 
     # Get user tasks
-    tasks = conn.execute("SELECT * FROM tasks WHERE id = ?", (id,)).fetchall()
+    tasks = conn.execute("""
+    SELECT * FROM tasks
+    WHERE owner_id = ?
+       OR task_id IN (
+            SELECT task_id FROM task_collaborators WHERE user_id = ?)""", (id, id)).fetchall()
+
     conn.close()
     return render_template("todo.html", tasks=tasks)
 
@@ -40,7 +45,12 @@ def get_tasks():
 
     id = session["u_id"]
     conn = get_db_connection()
-    tasks = conn.execute("SELECT * FROM tasks WHERE id = ?", (id,)).fetchall()
+    tasks = conn.execute("""
+    SELECT * FROM tasks
+    WHERE owner_id = ?
+       OR task_id IN (
+            SELECT task_id FROM task_collaborators WHERE user_id = ?)""", (id, id)).fetchall()
+
     conn.close()
     return jsonify([dict(task) for task in tasks])
 
@@ -52,7 +62,9 @@ def delete_task(task_id):
 
     id = session["u_id"]
     conn = get_db_connection()
-    conn.execute("DELETE FROM tasks WHERE id = ? AND id = ?", (task_id, id))
+    conn.execute("""
+    DELETE FROM tasks
+    WHERE task_id = ? AND owner_id = ?""", (task_id, id))
     conn.commit()
     conn.close()
     return jsonify({"success": True})
