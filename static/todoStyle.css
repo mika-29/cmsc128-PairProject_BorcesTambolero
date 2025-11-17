@@ -610,32 +610,63 @@ header {
   background: #50a89b;
 }
 
-/* Add Collaboration Modal */
-.collab-form.pop-up {
-  display: none; /* hidden until active */
-  position: absolute; 
+/* =========================
+   PopUP Collab
+========================= */
+.pop-up-collab {
+  position: relative;
+  width: 90%;
   z-index: 50;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(3px);
-  background: rgba(0,0,0,0.4);
+  max-width: 400px;
+  padding: 1.25rem 1.875rem;
+  border-radius: 12px;
+  text-align: center;
+  background: #fff;
+  color: black;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
-.collab-form input,
-.collab-form button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 8px;
+.pop-up-collab h2 {
+  margin-bottom: 15px;
+  text-align: center;
+  color: rgb(15, 15, 15);
+}
+
+.pop-up-collab label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
   font-size: 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  text-align: left;
 }
 
-.collab-tasks {
-  margin-top: 1rem;
-  border-top: 1px solid #ccc;
-  padding-top: 0.5rem;
-} 
+.pop-up-collab input,
+.pop-up-collab select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.pop-up-collab button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #66cdbe;
+  transition: background 0.25s ease-in-out;
+}
+
+.pop-up-collab button:hover {
+  background: #50a89b;
+}
+
 
 /* =========================
    Hidden elements
