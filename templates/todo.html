@@ -8,60 +8,122 @@
 </head>
 
 <body>
-  <div class = "sidebar">
+
+  <!-- SIDEBAR (left side only) -->
+  <div class="sidebar">
     <h1>To-Do</h1>
     <h2>To-Be</h2>
+
     <button class="add-task">+ Add Task</button>
 
     <div class="sort-section">
       <h3>Sort Tasks</h3>
       <form id="sortForm">
         <label class="sort-option">
-          <input type="radio" name="sort" value="date_added" checked> Date Added </label>
+          <input type="radio" name="sort" value="date_added" checked> Date Added
+        </label>
         <label class="sort-option">
-          <input type="radio" name="sort" value="deadline"> Deadline </label>
+          <input type="radio" name="sort" value="deadline"> Deadline
+        </label>
         <label class="sort-option">
-          <input type="radio" name="sort" value="priority"> Importance </label>
+          <input type="radio" name="sort" value="priority"> Importance
+        </label>
       </form>
     </div>
 
     <a href="{{ url_for('login.logout') }}" class="logout-btn">Logout</a>
-
   </div>
 
-  <div class="categories">
 
-    <div class="status pending">
-      <div class="title">Pending</div>
-      <div class="list-container" id="pendingTaks"></div>
+  <!-- MAIN CONTENT AREA (THIS MUST BE OUTSIDE SIDEBAR) -->
+  <div class="main">
+
+    <!-- PERSONAL / COLLABORATIVE BUTTONS -->
+    <div class="todo-toggle">
+      <button id="personalBtn" class="active">Personal</button>
+      <button id="collabBtn">Collaborative</button>
     </div>
 
-    <div class="status ongoing">
-      <div class="title">On Going</div>
-      <div class="list-container" id="ongoingTaks"></div>
+    <button id="addCollabBtn">+ Add Collaborative List</button> 
+
+    <!-- Add Collaboration Modal -->
+    <form id="addCollabForm" class="hidden">
+      <div class="pop-up">
+        <span id="closeCollabPopUp" class="close">×</span>
+        <h2>Add Collaborative List</h2>
+        <label for="collabTitle">List Title:</label>
+        <input type="text" id="collabTitle" required>
+        <label for="addUserEmail">Add User by Email:</label>
+        <input type="email" id="addUserEmail" required>
+        <button type="button" id="saveCollabList">Save</button>
+      </div>
+    </form>
+
+    <!-- PERSONAL TASKS -->
+    <div id="personalContainer">
+      <div class="categories">
+
+        <div class="status pending">
+          <div class="title">Pending</div>
+          <div class="list-container" id="pendingTask"></div>
+        </div>
+
+        <div class="status ongoing">
+          <div class="title">On Going</div>
+          <div class="list-container" id="ongoingTask"></div>
+        </div>
+
+        <div class="status done">
+          <div class="title">Done</div>
+          <div class="list-container" id="doneTask"></div>
+        </div>
+
+      </div>
     </div>
 
-    <div class="status done">
-      <div class="title">Done</div>
-      <div class="list-container" id="doneTaks"></div>
-    </div>
-    
-  </div>
 
+    <!-- COLLABORATIVE TASKS -->
+      <div id="collabContainer" class="hidden">
+
+        <!-- Horizontal Overview -->
+        <div class="collab-lists" id="collabOverview">
+        </div>
+
+        <!-- Expanded view (like personal) -->
+        <div class="categories hidden" id="collabExpanded">
+          <div class="status pending">
+            <div class="title">Pending</div>
+            <div class="list-container" id="collabPendingTask"></div>
+          </div>
+          <div class="status ongoing">
+            <div class="title">On Going</div>
+            <div class="list-container" id="collabOngoingTask"></div>
+          </div>
+          <div class="status done">
+            <div class="title">Done</div>
+            <div class="list-container" id="collabDoneTask"></div>
+          </div>
+        </div>
+
+  </div> <!-- END MAIN -->
+
+
+  <!-- ADD TASK POPUP -->
   <form id="addTaskForm" class="form">
     <div class="pop-up">
       <span id="closePopUp" class="close">×</span>
+
       <h2>Add Task</h2>
 
       <label for="taskName">Task Name:</label>
-      <input type="text" name="title" id="taskName" placeholder="Task Name" required />
-      <span id="nameError" class="error"></span><br>
+      <input type="text" name="title" id="taskName" required>
+      <span id="nameError" class="error"></span><br> 
 
       <label for="dueDate">Due Date:</label>
-      <input type="date" name="deadline" id="dueDate" required />
+      <input type="date" name="deadline" id="dueDate" required>
 
       <label for="dueTime">Due Time:</label>
-      <input type="time" name="duetime" id="dueTime" required />
+      <input type="time" name="duetime" id="dueTime" required>
 
       <label for="kind">Status of Task:</label>
         <select name="task" id="task">
