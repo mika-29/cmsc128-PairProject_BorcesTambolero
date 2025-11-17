@@ -21,11 +21,20 @@ def todo():
 
     # Add task
     if request.method == "POST":
-        title = request.form.get("title")
+        data = request.get_json()
+        title = data.get("title")
+        deadline = data.get("deadline")
+        duetime = data.get("duetime")
+        status = data.get("status") or "pending"
+        priority = data.get("priority") or "mid"
+
         if title:
-            conn.execute("INSERT INTO tasks (id, title, status, priority) VALUES (?, ?, 'pending', 'mid')",
-                         (id, title))
+            conn.execute(
+                "INSERT INTO tasks (user_id, title, deadline, duetime, status, priority) VALUES (?, ?, ?, ?, ?, ?)",
+                (id, title, deadline, duetime, status, priority)
+            )
             conn.commit()
+
 
     # Get user tasks
     tasks = conn.execute("SELECT * FROM tasks WHERE id = ?", (id,)).fetchall()
