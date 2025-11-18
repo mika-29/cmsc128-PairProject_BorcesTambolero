@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const collabPendingTask = document.getElementById("collabPendingTask");
   const collabOngoingTask = document.getElementById("collabOngoingTask");
   const collabDoneTask = document.getElementById("collabDoneTask");
+  const collabOverview = document.getElementById("collabOverview");
   let currentCollabListId = null;
   
   personalBtn.addEventListener("click", () => { 
@@ -146,42 +147,39 @@ document.addEventListener("DOMContentLoaded", () => {
     attachCollabCardListeners();
   }
 
-  // Attach listeners for open/add task buttons
+  // Ensure collaborative list overview is centered and toggles properly
   function attachCollabCardListeners() {
     document.querySelectorAll(".collab-list-card").forEach(card => {
       const openBtn = card.querySelector(".open-collab");
       openBtn.addEventListener("click", async () => {
-        // show expanded collab board in main area
-        collabExpanded.classList.remove('hidden');
-        personalContainer.classList.add('hidden');
-        collabContainer.classList.remove('hidden');
+        // Hide the collabOverview and show the kanban layout
+        collabOverview.classList.add("hidden");
+        collabExpanded.classList.remove("hidden");
 
-        // set currently active collab list id
+        // Set the currently active collab list ID
         currentCollabListId = card.dataset.listId;
 
-        // clear main columns
-        collabPendingTask.innerHTML = '';
-        collabOngoingTask.innerHTML = '';
-        collabDoneTask.innerHTML = '';
+        // Clear the kanban columns
+        collabPendingTask.innerHTML = "";
+        collabOngoingTask.innerHTML = "";
+        collabDoneTask.innerHTML = "";
 
-        // load tasks for selected list into main columns
+        // Load tasks for the selected collaborative list
         await loadCollabTasks(currentCollabListId);
-
-        // ensure Add Task button exists inside expanded area
-        let addBtn = collabExpanded.querySelector('.add-collab-expanded');
-        if (!addBtn) {
-          addBtn = document.createElement('button');
-          addBtn.className = 'add-collab-expanded';
-          addBtn.textContent = '+ Add Task';
-          collabExpanded.appendChild(addBtn);
-          addBtn.addEventListener('click', () => {
-            // open the shared task popup; handleSaveTask will detect currentCollabListId
-            openForm(false);
-          });
-        }
       });
     });
   }
+
+  // Add a back button to return to the collabOverview
+  const backToOverviewBtn = document.createElement("button");
+  backToOverviewBtn.textContent = "Back to Overview";
+  backToOverviewBtn.className = "back-to-overview";
+  collabExpanded.appendChild(backToOverviewBtn);
+  backToOverviewBtn.addEventListener("click", () => {
+    collabOverview.classList.remove("hidden");
+    collabExpanded.classList.add("hidden");
+    currentCollabListId = null;
+  });
 
   // Load tasks for a specific collaborative list and render in Kanban columns
   async function loadCollabTasks(listId, board) {
