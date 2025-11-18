@@ -64,7 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById("addUserEmail").value.trim();
 
     if (!title || !email) {
-      return alert("Please fill out both fields");
+      alert("Please fill out both fields");
+      return;
     }
 
     try {
@@ -73,12 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title,
-          emails: [email] // wrap in array as your backend expects
+          emails: [email]
         })
       });
 
       if (!response.ok) {
-        // try to surface a JSON error message, fall back to text/html
         let errMsg;
         try {
           const j = await response.json();
@@ -86,7 +86,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
           errMsg = await response.text();
         }
-        alert(`Failed to create list: ${errMsg}`);
+        // Show a clear error if email not found
+        if (errMsg && errMsg.includes("not found")) {
+          alert("User with email '" + email + "' not found. Please enter a registered email.");
+        } else {
+          alert(`Failed to create list: ${errMsg}`);
+        }
         return;
       }
 
@@ -95,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Append new list to UI
       const newCard = document.createElement("div");
       newCard.classList.add("collab-list-card");
-      newCard.dataset.listId = data.list_id; // use the list_id returned from backend
+      newCard.dataset.listId = data.list_id;
       newCard.innerHTML = `
         <h3>${title}</h3>
         <p>Added user: ${email}</p>
@@ -107,10 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       collabListsContainer.appendChild(newCard);
 
-      // Wire up listeners for the newly created card (uses same helper as loadCollabLists)
       attachCollabCardListeners();
 
-      // Reset form
       collabForm.classList.add("hidden");
       document.getElementById("collabTitle").value = "";
       document.getElementById("addUserEmail").value = "";
@@ -166,6 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Load tasks for the selected collaborative list
         await loadCollabTasks(currentCollabListId);
+        // hide the floating Add Collaborative List button while viewing expanded board
+        if (addCollabBtn) addCollabBtn.style.display = 'none';
       });
     });
   }
@@ -179,6 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
     collabOverview.classList.remove("hidden");
     collabExpanded.classList.add("hidden");
     currentCollabListId = null;
+    // restore the floating Add Collaborative List button
+    if (addCollabBtn) addCollabBtn.style.display = '';
   });
 
   // Load tasks for a specific collaborative list and render in Kanban columns

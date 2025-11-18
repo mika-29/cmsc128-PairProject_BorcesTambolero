@@ -26,25 +26,23 @@ def create_collab():
         conn = sqlite3.connect(DATABASE)
         cur = conn.cursor()
 
-        # Insert the collaborative list
+        # Check all emails exist before creating the list
+        for email in emails:
+            cur.execute("SELECT id FROM users WHERE email = ?", (email,))
+            user_row = cur.fetchone()
+            if not user_row:
+                conn.close()
+                return jsonify({"error": f"User with email {email} not found"}), 400
+
+        # All emails valid, now insert the collaborative list
         cur.execute(
             "INSERT INTO collab_lists (title, owner_id) VALUES (?, ?)",
             (title, user_id)
         )
         list_id = cur.lastrowid
 
-        # Insert members into collab_members table, but ensure the email exists in users
+        # Insert members into collab_members table
         for email in emails:
-            # verify user exists in users table
-            cur.execute("SELECT id FROM users WHERE email = ?", (email,))
-            user_row = cur.fetchone()
-            if not user_row:
-                # rollback and return a descriptive error
-                conn.rollback()
-                conn.close()
-                return jsonify({"error": f"User with email {email} not found"}), 400
-
-            # Store email (and optionally user id) in collab_members
             cur.execute(
                 "INSERT INTO collab_members (list_id, user_email) VALUES (?, ?)",
                 (list_id, email)
