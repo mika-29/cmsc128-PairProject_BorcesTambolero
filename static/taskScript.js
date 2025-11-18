@@ -103,8 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
       newCard.dataset.listId = data.list_id;
       newCard.innerHTML = `
         <h3>${title}</h3>
-        <p>Added user: ${email}</p>
+        <p class="shared-with">Shared with: ${email}</p>
         <button class="open-collab">Open</button>
+        <button class="delete-collab">Delete</button>
         <div class="collab-tasks hidden">
           <div class="tasks-container"></div>
           <button class="add-collab-task">Add Task</button>
@@ -135,9 +136,17 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "collab-list-card";
       card.dataset.listId = list.id;
 
+      // build members display text if available
+      let membersText = '';
+      if (Array.isArray(list.members) && list.members.length) {
+        membersText = `<p class="shared-with">Shared with: ${list.members.join(', ')}</p>`;
+      }
+
       card.innerHTML = `
         <h3>${list.title}</h3>
+        ${membersText}
         <button class="open-collab">Open</button>
+        <button class="delete-collab">Delete</button>
         <div class="collab-tasks hidden">
           <div class="tasks-container"></div>
           <button class="add-collab-task">Add Task</button>
@@ -172,6 +181,20 @@ document.addEventListener("DOMContentLoaded", () => {
         // hide the floating Add Collaborative List button while viewing expanded board
         if (addCollabBtn) addCollabBtn.style.display = 'none';
       });
+
+      // Add delete button logic
+      const deleteBtn = card.querySelector(".delete-collab");
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm("Are you sure you want to delete this collaborative space?")) return;
+        const listId = card.dataset.listId;
+        const res = await fetch(`/collab/delete/${listId}`, { method: "DELETE" });
+        if (res.ok) {
+          card.remove();
+        } else {
+          const err = await res.json();
+          alert(err.error || "Failed to delete collaborative space.");
+        }
+      });
     });
   }
 
@@ -189,6 +212,37 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Load tasks for a specific collaborative list and render in Kanban columns
+  // Render helper moved to top-level so it can be reused after create
+  function renderCollabTask(task, useMainLocal = true, boardLocal = null) {
+    const taskCard = document.createElement("div");
+    taskCard.className = `task-card priority-${task.priority}`;
+    taskCard.dataset.taskId = task.id;
+    taskCard.innerHTML = `
+      <strong>${task.title}</strong>
+      <small>Status: ${task.status}</small>
+      <button class="delete-task">Delete</button>
+    `;
+
+    if (useMainLocal) {
+      if (task.status === 'pending') collabPendingTask.appendChild(taskCard);
+      else if (task.status === 'ongoing') collabOngoingTask.appendChild(taskCard);
+      else collabDoneTask.appendChild(taskCard);
+    } else if (boardLocal) {
+      const col = boardLocal.querySelector(`.list-container[data-status="${task.status}"]`);
+      if (col) col.appendChild(taskCard);
+    }
+
+    // Delete task handler
+    taskCard.querySelector(".delete-task").addEventListener("click", async () => {
+      const resp = await fetch(`/collab/tasks/${task.id}`, { method: "DELETE" });
+      if (resp.ok) taskCard.remove();
+      else {
+        const j = await resp.json().catch(() => ({}));
+        alert(j.error || 'Failed to delete task');
+      }
+    });
+  }
+
   async function loadCollabTasks(listId, board) {
     const useMain = !board;
     if (useMain) {
@@ -206,32 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const tasks = await res.json();
-
-    tasks.forEach(task => {
-      const taskCard = document.createElement("div");
-      taskCard.className = `task-card priority-${task.priority}`;
-      taskCard.dataset.taskId = task.id;
-      taskCard.innerHTML = `
-        <strong>${task.title}</strong>
-        <small>Status: ${task.status}</small>
-        <button class="delete-task">Delete</button>
-      `;
-
-      if (useMain) {
-        if (task.status === 'pending') collabPendingTask.appendChild(taskCard);
-        else if (task.status === 'ongoing') collabOngoingTask.appendChild(taskCard);
-        else collabDoneTask.appendChild(taskCard);
-      } else {
-        const col = board.querySelector(`.list-container[data-status="${task.status}"]`);
-        if (col) col.appendChild(taskCard);
-      }
-
-      // Delete task
-      taskCard.querySelector(".delete-task").addEventListener("click", async () => {
-        await fetch(`/collab/tasks/${task.id}`, { method: "DELETE" });
-        taskCard.remove();
-      });
-    });
+    tasks.forEach(t => renderCollabTask(t, useMain, board));
   }
 
   // Initial load
@@ -362,8 +391,12 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // reload collab tasks for current list
-        await loadCollabTasks(currentCollabListId);
+        // get created task and append immediately so UI updates without refresh
+        const newTask = await res.json();
+        closeForm();
+        renderCollabTask(newTask, true, null);
+        // keep form closed and done
+        return;
       } else {
         const res = await fetch("/tasks", {              //POST request, adds database 
           method: "POST",

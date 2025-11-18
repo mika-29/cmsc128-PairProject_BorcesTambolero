@@ -14,6 +14,7 @@ def get_db_connection():
 # ---------- Collaborative lists & tasks endpoints ----------
 @todo_bp.route('/collab/create', methods=['POST'])
 def create_collab_list():
+
     if 'u_id' not in session:
         return jsonify({'error': 'Not logged in'}), 401
 
@@ -26,6 +27,16 @@ def create_collab_list():
 
     owner_id = session['u_id']
     conn = get_db_connection()
+
+    # Check all emails exist in users table
+    for em in emails:
+        if not em:
+            continue
+        user = conn.execute('SELECT id FROM users WHERE email = ?', (em,)).fetchone()
+        if not user:
+            conn.close()
+            return jsonify({'error': f'User not found: {em}'}), 400
+
     cur = conn.execute(
         'INSERT INTO collab_lists (title, owner_id) VALUES (?, ?)',
         (title, owner_id)
@@ -42,9 +53,18 @@ def create_collab_list():
         )
 
     conn.commit()
+    # fetch member display names (name if available, otherwise email)
+    members = []
+    rows = conn.execute(
+        'SELECT cm.user_email, u.name FROM collab_members cm LEFT JOIN users u ON u.email = cm.user_email WHERE cm.list_id = ?',
+        (list_id,)
+    ).fetchall()
+    for r in rows:
+        members.append(r['name'] if r['name'] else r['user_email'])
+
     conn.close()
 
-    return jsonify({'list_id': list_id, 'title': title, 'owner_id': owner_id}), 201
+    return jsonify({'list_id': list_id, 'title': title, 'owner_id': owner_id, 'members': members}), 201
 
 
 @todo_bp.route('/collab/mylists', methods=['GET'])
@@ -80,11 +100,19 @@ def get_my_collab_lists():
         if row['id'] in seen:
             continue
         seen.add(row['id'])
+        # fetch members for this list
+        mem_rows = conn.execute(
+            'SELECT cm.user_email, u.name FROM collab_members cm LEFT JOIN users u ON u.email = cm.user_email WHERE cm.list_id = ?',
+            (row['id'],)
+        ).fetchall()
+        members = [m['name'] if m['name'] else m['user_email'] for m in mem_rows]
+
         results.append({
             'id': row['id'],
             'title': row['title'],
             'owner_id': row['owner_id'],
-            'created_at': row['created_at']
+            'created_at': row['created_at'],
+            'members': members
         })
 
     conn.close()
@@ -347,3 +375,26 @@ def delete_task(task_id):
         return jsonify({"error": "Task not found or you are not the owner"}), 404
 
     return jsonify({"success": True})
+
+# Delete a collaborative space (collab list)
+@todo_bp.route('/collab/delete/<int:list_id>', methods=['DELETE'])
+def delete_collab_list(list_id):
+    if 'u_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+    user_id = session['u_id']
+    conn = get_db_connection()
+    # Check ownership
+    owner = conn.execute('SELECT owner_id FROM collab_lists WHERE id = ?', (list_id,)).fetchone()
+    if not owner:
+        conn.close()
+        return jsonify({'error': 'Collaborative list not found'}), 404
+    if owner['owner_id'] != user_id:
+        conn.close()
+        return jsonify({'error': 'Not authorized to delete this collaborative space'}), 403
+    # Delete all related tasks and members
+    conn.execute('DELETE FROM collab_tasks WHERE list_id = ?', (list_id,))
+    conn.execute('DELETE FROM collab_members WHERE list_id = ?', (list_id,))
+    conn.execute('DELETE FROM collab_lists WHERE id = ?', (list_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
