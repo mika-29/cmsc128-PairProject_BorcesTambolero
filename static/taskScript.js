@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       console.error(err);
-      alert("Failed to create collaborative list. Check console for details.");
+      alert("Failed to create collaborative list.");
     }
   });
 

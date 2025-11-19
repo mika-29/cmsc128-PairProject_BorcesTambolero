@@ -35,7 +35,7 @@
   </div>
 
 
-  <!-- MAIN CONTENT AREA (THIS MUST BE OUTSIDE SIDEBAR) -->
+  <!-- MAIN CONTENT (OUTSIDE SIDEBAR) -->
   <div class="main">
 
     <!-- PERSONAL / COLLABORATIVE BUTTONS -->
@@ -45,19 +45,6 @@
     </div>
 
     <button id="addCollabBtn">+ Add Collaborative List</button> 
-
-    <!-- Add Collaboration Modal -->
-    <form id="addCollabForm" class="hidden">
-      <div class="pop-up">
-        <span id="closeCollabPopUp" class="close">×</span>
-        <h2>Add Collaborative List</h2>
-        <label for="collabTitle">List Title:</label>
-        <input type="text" id="collabTitle" required>
-        <label for="addUserEmail">Add User by Email:</label>
-        <input type="email" id="addUserEmail" required>
-        <button type="button" id="saveCollabList">Save</button>
-      </div>
-    </form>
 
     <!-- PERSONAL TASKS -->
     <div id="personalContainer">
@@ -89,7 +76,7 @@
         <div class="collab-lists" id="collabOverview">
         </div>
 
-        <!-- Expanded view (like personal) -->
+        <!-- Tasks view (like personal) -->
         <div class="categories hidden" id="collabExpanded">
           <div class="status pending">
             <div class="title">Pending</div>
@@ -105,8 +92,20 @@
           </div>
         </div>
 
-  </div> <!-- END MAIN -->
+  </div> 
 
+  <!-- Add Collaboration Modal -->
+    <form id="addCollabForm" class="hidden">
+      <div class="pop-up">
+        <span id="closeCollabPopUp" class="close">×</span>
+        <h2>Add Collaborative List</h2>
+        <label for="collabTitle">List Title:</label>
+        <input type="text" id="collabTitle" required>
+        <label for="addUserEmail">Add User by Email:</label>
+        <input type="email" id="addUserEmail" required>
+        <button type="button" id="saveCollabList">Save</button>
+      </div>
+    </form> 
 
   <!-- ADD TASK POPUP -->
   <form id="addTaskForm" class="form">
