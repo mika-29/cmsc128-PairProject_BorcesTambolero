@@ -19,6 +19,6 @@ Flask + sqlite3 (for database)
     - /collab/tasks/<task_id> (PUTTING, POST, etc..)
 
 - For authentication:
-    - "/" (Login)
-    - /signup
-    - /logout
+    - "/"
+    - /signup 
+    - /logout 
