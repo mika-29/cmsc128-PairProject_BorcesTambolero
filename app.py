@@ -18,9 +18,13 @@ CREATE TABLE users (
 );
 """)
 
+# If table exists, drop it
+cursor.execute("DROP TABLE IF EXISTS tasks")
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL, 
     title TEXT NOT NULL,
     deadline TEXT,
     duetime TEXT,
