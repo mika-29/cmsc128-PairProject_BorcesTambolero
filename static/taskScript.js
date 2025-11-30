@@ -10,274 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskSelect      = document.getElementById("task");
   const prioritySelect  = document.getElementById("priority");
   const nameError       = document.getElementById("nameError");
-  // ====== Collaborative Lists & Tasks ======
-  const addCollabBtn = document.getElementById("addCollabBtn");
-  const collabForm = document.getElementById("addCollabForm");
-  const closeCollabBtn = document.getElementById("closeCollabPopUp");
-  const saveCollabBtn = document.getElementById("saveCollabList");
-  const collabListsContainer = document.querySelector(".collab-lists");
-  const personalBtn = document.getElementById("personalBtn"); 
-  const collabBtn = document.getElementById("collabBtn");
-  const personalContainer = document.getElementById("personalContainer");
-  const collabContainer = document.getElementById("collabContainer");
-  const collabExpanded = document.getElementById("collabExpanded");
-  const collabPendingTask = document.getElementById("collabPendingTask");
-  const collabOngoingTask = document.getElementById("collabOngoingTask");
-  const collabDoneTask = document.getElementById("collabDoneTask");
-  const collabOverview = document.getElementById("collabOverview");
-  let currentCollabListId = null;
-  
-  personalBtn.addEventListener("click", () => { 
-    personalContainer.classList.remove("hidden"); 
-    collabContainer.classList.add("hidden"); 
-    collabExpanded.classList.add('hidden');
-    currentCollabListId = null;
-    personalBtn.classList.add("active");
-    collabBtn.classList.remove("active");
-  }); 
-     
-  collabBtn.addEventListener("click", () => { 
-    personalContainer.classList.add("hidden"); 
-    collabContainer.classList.remove("hidden"); 
-    // keep expanded hidden until a list is opened
-    collabExpanded.classList.add('hidden');
-    currentCollabListId = null;
-    collabBtn.classList.add("active"); 
-    personalBtn.classList.remove("active");
-  });
-
-  // Show/hide Add Collab button depending on view
-  function updateCollabButton() {
-    addCollabBtn.style.display = collabContainer.classList.contains("hidden") ? "none" : "block";
-  }
-  updateCollabButton();
-  personalBtn.addEventListener("click", updateCollabButton);
-  collabBtn.addEventListener("click", updateCollabButton);
-
-  // Open/Close collab form
-  addCollabBtn.addEventListener("click", () => collabForm.classList.remove("hidden"));
-  closeCollabBtn.addEventListener("click", () => collabForm.classList.add("hidden"));
-
- // Save new collaborative list (append to UI)
-  saveCollabBtn.addEventListener("click", async () => {
-    const title = document.getElementById("collabTitle").value.trim();
-    const email = document.getElementById("addUserEmail").value.trim();
-
-    if (!title || !email) {
-      alert("Please fill out both fields");
-      return;
-    }
-
-    try {
-      const response = await fetch("/collab/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title,
-          emails: [email]
-        })
-      });
-
-      if (!response.ok) {
-        let errMsg;
-        try {
-          const j = await response.json();
-          errMsg = j.error || JSON.stringify(j);
-        } catch (e) {
-          errMsg = await response.text();
-        }
-        // Show a clear error if email not found
-        if (errMsg && errMsg.includes("not found")) {
-          alert("User with email '" + email + "' not found. Please enter a registered email.");
-        } else {
-          alert(`Failed to create list: ${errMsg}`);
-        }
-        return;
-      }
-
-      const data = await response.json();
-
-      // Append new list to UI
-      const newCard = document.createElement("div");
-      newCard.classList.add("collab-list-card");
-      newCard.dataset.listId = data.list_id;
-      newCard.innerHTML = `
-        <h3>${title}</h3>
-        <p class="shared-with">Shared with: ${email}</p>
-        <button class="open-collab">Open</button>
-        <button class="delete-collab">Delete</button>
-        <div class="collab-tasks hidden">
-          <div class="tasks-container"></div>
-          <button class="add-collab-task">Add Task</button>
-        </div>
-      `;
-      collabListsContainer.appendChild(newCard);
-
-      attachCollabCardListeners();
-
-      collabForm.classList.add("hidden");
-      document.getElementById("collabTitle").value = "";
-      document.getElementById("addUserEmail").value = "";
-
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create collaborative list.");
-    }
-  });
-
-  // Load all collaborative lists for current user
-  async function loadCollabLists() {
-    collabListsContainer.innerHTML = "";
-    const res = await fetch("/collab/mylists");
-    const lists = await res.json();
-
-    lists.forEach(list => {
-      const card = document.createElement("div");
-      card.className = "collab-list-card";
-      card.dataset.listId = list.id;
-
-      // build members display text if available
-      let membersText = '';
-      if (Array.isArray(list.members) && list.members.length) {
-        membersText = `<p class="shared-with">Shared with: ${list.members.join(', ')}</p>`;
-      }
-
-      card.innerHTML = `
-        <h3>${list.title}</h3>
-        ${membersText}
-        <button class="open-collab">Open</button>
-        <button class="delete-collab">Delete</button>
-        <div class="collab-tasks hidden">
-          <div class="tasks-container"></div>
-          <button class="add-collab-task">Add Task</button>
-        </div>
-      `;
-
-      collabListsContainer.appendChild(card);
-    });
-
-    attachCollabCardListeners();
-  }
-
-  // Ensure collaborative list overview is centered and toggles properly
-  function attachCollabCardListeners() {
-    document.querySelectorAll(".collab-list-card").forEach(card => {
-      const openBtn = card.querySelector(".open-collab");
-      openBtn.addEventListener("click", async () => {
-        // Hide the collabOverview and show the kanban layout
-        collabOverview.classList.add("hidden");
-        collabExpanded.classList.remove("hidden");
-
-        // Set the currently active collab list ID
-        currentCollabListId = card.dataset.listId;
-
-        // Clear the kanban columns
-        collabPendingTask.innerHTML = "";
-        collabOngoingTask.innerHTML = "";
-        collabDoneTask.innerHTML = "";
-
-        // Load tasks for the selected collaborative list
-        await loadCollabTasks(currentCollabListId);
-        // hide the floating Add Collaborative List button while viewing expanded board
-        if (addCollabBtn) addCollabBtn.style.display = 'none';
-      });
-
-      // Add delete button logic
-      const deleteBtn = card.querySelector(".delete-collab");
-      deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Are you sure you want to delete this collaborative space?")) return;
-        const listId = card.dataset.listId;
-        const res = await fetch(`/collab/delete/${listId}`, { method: "DELETE" });
-        if (res.ok) {
-          card.remove();
-        } else {
-          const err = await res.json();
-          alert(err.error || "Failed to delete collaborative space.");
-        }
-      });
-    });
-  }
-
-  // Add a back button to return to the collabOverview
-  const backToOverviewBtn = document.createElement("button");
-  backToOverviewBtn.textContent = "Back to Overview";
-  backToOverviewBtn.className = "back-to-overview";
-  collabExpanded.appendChild(backToOverviewBtn);
-  backToOverviewBtn.addEventListener("click", () => {
-    collabOverview.classList.remove("hidden");
-    collabExpanded.classList.add("hidden");
-    currentCollabListId = null;
-    // restore the floating Add Collaborative List button
-    if (addCollabBtn) addCollabBtn.style.display = '';
-  });
-
-  // Load tasks for a specific collaborative list and render in Kanban columns
-  // Render helper moved to top-level so it can be reused after create
-  function renderCollabTask(task, useMainLocal = true, boardLocal = null) {
-    const taskCard = document.createElement("div");
-    taskCard.className = `task-card priority-${task.priority}`;
-    taskCard.dataset.taskId = task.id;
-    taskCard.innerHTML = `
-      <strong>${task.title}</strong>
-      <small>Status: ${task.status}</small>
-      <button class="delete-task">Delete</button>
-    `;
-
-    if (useMainLocal) {
-      if (task.status === 'pending') collabPendingTask.appendChild(taskCard);
-      else if (task.status === 'ongoing') collabOngoingTask.appendChild(taskCard);
-      else collabDoneTask.appendChild(taskCard);
-    } else if (boardLocal) {
-      const col = boardLocal.querySelector(`.list-container[data-status="${task.status}"]`);
-      if (col) col.appendChild(taskCard);
-    }
-
-    // Delete task handler
-    taskCard.querySelector(".delete-task").addEventListener("click", async () => {
-      const resp = await fetch(`/collab/tasks/${task.id}`, { method: "DELETE" });
-      if (resp.ok) taskCard.remove();
-      else {
-        const j = await resp.json().catch(() => ({}));
-        alert(j.error || 'Failed to delete task');
-      }
-    });
-  }
-
-  async function loadCollabTasks(listId, board) {
-    const useMain = !board;
-    if (useMain) {
-      collabPendingTask.innerHTML = '';
-      collabOngoingTask.innerHTML = '';
-      collabDoneTask.innerHTML = '';
-    } else {
-      board.querySelectorAll('.list-container').forEach(c => c.innerHTML = '');
-    }
-
-    const res = await fetch(`/collab/tasks/${listId}`);
-    if (!res.ok) {
-      const text = await res.text();
-      console.error('Failed to load collab tasks:', text);
-      return;
-    }
-    const tasks = await res.json();
-    tasks.forEach(t => renderCollabTask(t, useMain, board));
-  }
-
-  // Initial load
-  loadCollabLists();
-
 
   let editingTask = null;   
 
   // ====== Rendering Tasks ======                              //fetches tasks from backend and sends them to renderTasks 
   async function loadTasks(sortBy = "date_added") {
     const res = await fetch(`/tasks?sort=${sortBy}`);          //gastorya sa backend, GET /tasks 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("Failed to load tasks:", text);
-      alert("Failed to load tasks. See console for details.");
-      return;
-    }
     const tasks = await res.json();
     renderTasks(tasks);
     setSortDropdown(sortBy);
@@ -353,63 +91,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     nameError.textContent = "";
 
-
     if (editingTask) {
       const id = editingTask.dataset.id;
-      const res = await fetch(`/tasks/${id}`, {         //PUT request, updates data 
+      await fetch(`/tasks/${id}`, {         //PUT request, updates data 
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
       });
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Failed to update task:", text);
-        alert("Failed to update task. See console for details.");
-        return;
-      }
     } else {
       taskData.createdAt = new Date().toISOString();
       // add new
-      if (currentCollabListId) {
-        // create a collaborative task
-        const res = await fetch("/collab/tasks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            list_id: currentCollabListId,
-            title: taskData.title,
-            status: taskData.status,
-            priority: taskData.priority,
-            deadline: taskData.deadline,
-            duetime: taskData.duetime
-          })
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("Failed to save collaborative task:", text);
-          alert("Failed to save task. See console for details.");
-          return;
-        }
-
-        // get created task and append immediately so UI updates without refresh
-        const newTask = await res.json();
-        closeForm();
-        renderCollabTask(newTask, true, null);
-        // keep form closed and done
-        return;
-      } else {
-        const res = await fetch("/tasks", {              //POST request, adds database 
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(taskData),
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("Failed to save task:", text);
-          alert("Failed to save task. See console for details.");
-          return;
-        }
-      }
+      await fetch("/tasks", {              //POST request, adds database 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taskData),
+      });
     }
 
     editingTask = null;
