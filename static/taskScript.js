@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ====== Element References ====== (delegate)
+  // ====== Element References ======
   const addButton       = document.querySelector(".add-task");  
   const form            = document.getElementById("addTaskForm");
   const closeBtn        = document.getElementById("closePopUp");
@@ -13,26 +13,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let editingTask = null;   
 
-  // ====== Rendering Tasks ======                              //fetches tasks from backend and sends them to renderTasks 
+  // ====== Rendering Tasks ======                              
   async function loadTasks(sortBy = "date_added") {
-    const res = await fetch(`/tasks?sort=${sortBy}`);          //gastorya sa backend, GET /tasks 
+    const res = await fetch(`/tasks?sort=${sortBy}`);
     const tasks = await res.json();
     renderTasks(tasks);
     setSortDropdown(sortBy);
   }
 
   function renderTasks(tasks) {
-    //tasks.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
     document.querySelectorAll(".list-container").forEach(c => (c.innerHTML = ""));
 
-    tasks.forEach(task => {                            //builds a task card and puts it in the correct status column 
+    tasks.forEach(task => {
       const targetColumn = document.querySelector(
         `.status.${task.status} .list-container`
       );
       if (!targetColumn) return;
 
       const taskCard = document.createElement("div");
-      taskCard.className = `task-card priority-${task.priority}`; // add priority class
+      taskCard.className = `task-card priority-${task.priority}`; 
+      
+      // --- ENABLE DRAGGING HERE ---
+      taskCard.setAttribute("draggable", "true"); 
+      // ----------------------------
+
       taskCard.dataset.id = task.id;
       taskCard.dataset.title = task.title;
       taskCard.dataset.status = task.status;
@@ -65,6 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
+      // Add drag event listener directly to the new card
+      taskCard.addEventListener("dragstart", dragStart);
+      
       targetColumn.appendChild(taskCard);
     });
   }
@@ -74,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dropdown) dropdown.value = value;
   }
 
-  async function handleSaveTask(e) {                  //handles form submission (adding or editing taks)
+  async function handleSaveTask(e) {
     e.preventDefault();
 
     const taskData = {
@@ -93,15 +100,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (editingTask) {
       const id = editingTask.dataset.id;
-      await fetch(`/tasks/${id}`, {         //PUT request, updates data 
+      await fetch(`/tasks/${id}`, {         
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
       });
     } else {
       taskData.createdAt = new Date().toISOString();
-      // add new
-      await fetch("/tasks", {              //POST request, adds database 
+      await fetch("/tasks", {              
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
@@ -110,13 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     editingTask = null;
     taskNameInput.focus();
-
     closeForm();
-    loadTasks();         //reload UI 
+    loadTasks();
   }
 
-  function formatDueDate(dateStr, timeStr, status) {             //makes deadlines readable and applies warnings 
-    if (!dateStr) return "No deadline set"; // no deadline
+  function formatDueDate(dateStr, timeStr, status) {
+    if (!dateStr) return "No deadline set"; 
 
     const deadline = new Date(`${dateStr}T${timeStr || "00:00"}`);
     const now = new Date();
@@ -130,17 +135,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const formattedTime = timeStr ? deadline.toLocaleTimeString("en-US", optionsTime) : "";
     const formatted = timeStr ? `${formattedDate} • ${formattedTime}` : formattedDate;
 
-    // If task is already done → just show normal date, no warnings
     if (status === "done") {
       return formatted;
     }
 
-    // Overdue
     if (diffMs < 0) {
       return `<span class="overdue">${formatted} (Overdue)</span>`;
     }
 
-    // Near deadline (within 24h)
     if (diffHours <= 24) {
       return `<span class="near-deadline">${formatted} (Due Soon)</span>`;
     }
@@ -149,28 +151,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ====== Handle Task Options ======
-  async function handleTaskOptions(e) {            //edit,delete,change status 
-    if (e.target.classList.contains("options-btn")) { //toggle menu 
-      const menu = e.target.nextElementSibling; // the ul.options-menu
+  async function handleTaskOptions(e) {
+    if (e.target.classList.contains("options-btn")) {
+      const menu = e.target.nextElementSibling; 
       menu.classList.toggle("show");
-      return; // stop here so it doesn’t trigger other actions
+      return; 
     }
 
-    // DELETE task
     if (e.target.classList.contains("delete-task")) {
       const task = e.target.closest(".task-card");
       const id = task.dataset.id; 
 
       if (confirm("Are you sure you want to delete this task?")) {
-        //Temporarily hide task from UI 
         task.style.display = "none"; 
-
-        //Show toast and store info 
         showToast(`Task "${task.dataset.title}" deleted`, { id, element: task, title: task.dataset.title, }); 
-    } 
-  }
+      }
+    }
 
-    // EDIT task
     if (e.target.classList.contains("edit-task")) {
       const task = e.target.closest(".task-card");
       editingTask = task;
@@ -185,25 +182,22 @@ document.addEventListener("DOMContentLoaded", () => {
       openForm(true);
     }
 
-    // CHANGE STATUS
     if (e.target.closest(".status-menu li")) {
       const newStatus = e.target.getAttribute("data-status");
       const task = e.target.closest(".task-card");
       const id = task.dataset.id;
 
-      await fetch(`/tasks/${id}`, {         //PUT request for status 
+      await fetch(`/tasks/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),      //object into JSON string to send into backend 
+        body: JSON.stringify({ status: newStatus }),
       });
-
       loadTasks();
     }
   }
-  // ====== Form Controls ======
-  function openForm(isEdit = false) {             //popup the hidden form "flex" 
-    form.style.display = "flex";
 
+  function openForm(isEdit = false) {
+    form.style.display = "flex";
     if (!isEdit) {
       taskNameInput.value   = "";
       dueDateInput.value    = "";
@@ -219,46 +213,36 @@ document.addEventListener("DOMContentLoaded", () => {
     form.style.display = "none";
   }
 
-  // ====== Event Listeners ====== for buttons to work 
   addButton.addEventListener("click", () => openForm(false));
   closeBtn.addEventListener("click", closeForm);
   saveBtn.addEventListener("click", handleSaveTask);
   document.addEventListener("click", handleTaskOptions);
 
-  // Sidebar sort dropdown
   document.getElementById("sortForm").addEventListener("change", function (e) {
     const sortValue = e.target.value;
-    // reload tasks based on selected sort
     loadTasks(sortValue);
   });
 
-
-
-  // ====== Initial Load ======
   loadTasks();
 
-  //=====Toast Logic=====
+  //===== Toast Logic =====
   const toast = document.getElementById("toast");
   const toastMessage = document.getElementById("toast-message");
   const undoBtn = document.getElementById("undo-btn"); 
 
   let deleteTimeout = null;
-  let pendingDelete = null; //holds the task waiting for permanent deletion 
+  let pendingDelete = null; 
 
-    function showToast(message, task) {
+  function showToast(message, task) {
       toastMessage.textContent = message;
       toast.classList.remove("hidden");
 
-    // Clear previous timeout if exists
     if (deleteTimeout) clearTimeout(deleteTimeout);
-
-    // Store task info to restore on undo
     pendingDelete = task;
 
-    // Auto-hide after 5s and permanently delete
     deleteTimeout = setTimeout(async () => {
       if (pendingDelete) {
-        await fetch(`/tasks/${pendingDelete.id}`, { method: "DELETE" });    //DELETE request 
+        await fetch(`/tasks/${pendingDelete.id}`, { method: "DELETE" });
         pendingDelete = null;
         loadTasks();
       }
@@ -268,11 +252,93 @@ document.addEventListener("DOMContentLoaded", () => {
 
   undoBtn.addEventListener("click", () => {
     if (pendingDelete) {
-      // Restore tasks visually
       pendingDelete.element.style.display = ""; 
       pendingDelete = null;
     }
     if (deleteTimeout) clearTimeout(deleteTimeout);
     toast.classList.add("hidden");
   });
+
+  // ==========================================
+  // DRAG AND DROP LOGIC (NEW SECTION)
+  // ==========================================
+  
+  let draggedTask = null;
+
+  function dragStart(e) {
+      draggedTask = this;
+      // Use a timeout to keep the element visible while dragging starts, then hide for effect
+      setTimeout(() => this.classList.add("dragging"), 0);
+  }
+
+  const columns = document.querySelectorAll(".status");
+
+  columns.forEach(column => {
+      column.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          const afterElement = getDragAfterElement(column.querySelector(".list-container"), e.clientY);
+          const listContainer = column.querySelector(".list-container");
+          
+          if (afterElement == null) {
+              listContainer.appendChild(draggedTask);
+          } else {
+              listContainer.insertBefore(draggedTask, afterElement);
+          }
+      });
+
+      column.addEventListener("drop", async (e) => {
+          e.preventDefault();
+          draggedTask.classList.remove("dragging");
+
+          const listContainer = column.querySelector(".list-container");
+          const containerId = listContainer.id; 
+          let newStatus = "";
+
+          // Determine status based on the container ID
+          if (containerId === "pendingTaks") newStatus = "pending";
+          else if (containerId === "ongoingTaks") newStatus = "ongoing";
+          else if (containerId === "doneTaks") newStatus = "done";
+
+          // If status changed, update the backend
+          if (newStatus && draggedTask.dataset.status !== newStatus) {
+              const taskId = draggedTask.dataset.id;
+              
+              // Optimistic UI update
+              draggedTask.dataset.status = newStatus;
+
+              // Check if completed style needs update
+              const titleStrong = draggedTask.querySelector("strong");
+              if (newStatus === "done") {
+                  titleStrong.classList.add("completed");
+              } else {
+                  titleStrong.classList.remove("completed");
+              }
+
+              // Send update to server
+              await fetch(`/tasks/${taskId}/status`, {
+                  method: "PATCH", // Ensure backend has this PATCH route
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ status: newStatus })
+              });
+              
+              // Optional: reload tasks to confirm sort order or specific formatting
+              // loadTasks(); 
+          }
+      });
+  });
+
+  function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.task-card:not(.dragging)')];
+
+      return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) {
+              return { offset: offset, element: child };
+          } else {
+              return closest;
+          }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
 });

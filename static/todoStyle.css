@@ -14,20 +14,22 @@
   margin: 0;
 }
 
-html {
+html, body {
   height: 100%;
-  font-size: 16px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  height: 100%;
-  width: 100%;
   color: white;
   font-family: "Sublima", sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   background: #222531;
   background-repeat: no-repeat;
+  display: flex; 
+  overflow: hidden; /* Prevents double scrollbars */
 }
 
 img, picture, video, canvas, svg {
@@ -67,19 +69,19 @@ a {
    Header & Navigation
 ========================= */
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
+  height: 100vh;
   width: 220px;
+  position: relative;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(6px);
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0; /* Prevents sidebar from shrinking */
   align-items: center;
   gap: 2rem;
   box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+  z-index: 10;
 }
 
 .sidebar h1 {
@@ -179,17 +181,32 @@ header {
 /* =========================
    Task Categories & Status
 ========================= */
+.main-content {
+  flex: 1; /* Takes all remaining width */
+  display: flex;
+  flex-direction: column;
+  padding: 20px 40px; /* Add padding to push content away from edges */
+  height: 100vh;
+  overflow-y: hidden; /* Let the categories scroll, not the whole page */
+}
+
+.welcome-header {
+  margin-bottom: 20px;
+  display: block; 
+}
+
+.welcome-header h2 {
+  font-size: 2.5rem;
+  margin: 0;
+}
+
 .categories {
-  position: fixed;
   display: flex;
   flex: 1;
-  gap: 1.25rem;
-  padding: 1.25rem;
-  top: 21vh;
-  left: 5vw;
-  width: 85vw;
-  max-width: 100%;
-  margin-left: 150px;
+  gap: 20px;
+  min-height: 0;
+  width: 100%;
+  padding-top: 80px;
 }
 
 .status {
@@ -457,7 +474,6 @@ header {
   left: 20px;
   right: 20px;
   text-align: center;
-
   background-color: #50a89b;
   color: white;
   font-weight: 600;
@@ -503,6 +519,17 @@ header {
   cursor: pointer;
 }
 
+dragging {
+    opacity: 0.5;
+    border: 2px dashed #fff;
+    transform: scale(0.95);
+}
+
+/* Optional: Highlight the column you are hovering over */
+.status.drag-over {
+    background: #5d6175; /* Slightly lighter than normal */
+    transition: background 0.2s;
+}
 @keyframes fadeIn{
   from { opacity: 0; transform: translateY(20px);}
   to { opacity: 1; transform: translateY(0);}  

@@ -8,7 +8,7 @@
 </head>
 
 <body>
-  <div class = "sidebar">
+  <div class="sidebar">
     <h1>To-Do</h1>
     <h2>To-Be</h2>
     <button class="add-task">+ Add Task</button>
@@ -26,26 +26,30 @@
     </div>
 
     <a href="{{ url_for('login.logout') }}" class="logout-btn">Logout</a>
-
   </div>
 
-  <div class="categories">
-
-    <div class="status pending">
-      <div class="title">Pending</div>
-      <div class="list-container" id="pendingTaks"></div>
-    </div>
-
-    <div class="status ongoing">
-      <div class="title">On Going</div>
-      <div class="list-container" id="ongoingTaks"></div>
-    </div>
-
-    <div class="status done">
-      <div class="title">Done</div>
-      <div class="list-container" id="doneTaks"></div>
-    </div>
+  <div class="main-content">
     
+    <div class="welcome-header">
+       <h2>Welcome back, {{ name }}</h2>
+    </div>
+
+    <div class="categories">
+      <div class="status pending">
+        <div class="title">Pending</div>
+        <div class="list-container" id="pendingTaks"></div>
+      </div>
+
+      <div class="status ongoing">
+        <div class="title">On Going</div>
+        <div class="list-container" id="ongoingTaks"></div>
+      </div>
+
+      <div class="status done">
+        <div class="title">Done</div>
+        <div class="list-container" id="doneTaks"></div>
+      </div>
+    </div>
   </div>
 
   <form id="addTaskForm" class="form">
@@ -81,13 +85,12 @@
     </div>
   </form>
 
-  <!--<div class="event-container"></div>-->
-<script src="{{ url_for('static', filename='taskScript.js') }}"></script>
+  <script src="{{ url_for('static', filename='taskScript.js') }}"></script>
 
-<div id="toast" class="toast hidden">
-  <span id="toast-message"></span>
-  <button id="undo-btn">Undo</button>
-</div>
+  <div id="toast" class="toast hidden">
+    <span id="toast-message"></span>
+    <button id="undo-btn">Undo</button>
+  </div>
 
 </body>
 </html>
