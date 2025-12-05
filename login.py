@@ -10,12 +10,23 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+# safety reasons — prevent caching
+@login_bp.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 # -----------------------------
 # LOGIN ROUTE
 # -----------------------------
 @login_bp.route("/", methods=["GET", "POST"])
 def index():
+    # If the user is already logged in, push them to the todo list immediately.
+    if "u_id" in session:
+        return redirect(url_for("todo.todo"))
+    
     if request.method == "POST":
         email = request.form.get("email", "").strip()
         pwd = request.form.get("password", "").strip()
@@ -28,6 +39,7 @@ def index():
             return render_template("login.html", error="Account not found. Please try again.")
 
         if user and check_password_hash(user["password"], pwd):
+            session.clear()
             session["u_id"] = user["id"]
             session["name"] = user["name"]
             
@@ -43,6 +55,9 @@ def index():
 # -----------------------------
 @login_bp.route("/signup", methods=["GET", "POST"])
 def signup():
+    if "u_id" in session:
+        return redirect(url_for("todo.todo"))
+    
     if request.method == "GET":
         return render_template("register.html", step=1)
 

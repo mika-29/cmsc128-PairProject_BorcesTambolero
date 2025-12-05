@@ -5,6 +5,13 @@ todo_bp = Blueprint("todo", __name__)
 
 DATABASE = "app.db"
 
+@todo_bp.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -17,12 +24,13 @@ def todo():
         return redirect(url_for("login.index"))
 
     id = session["u_id"] 
+    name = session.get("name", "User")
     conn = get_db_connection()
 
     # Get user tasks
     tasks = conn.execute("SELECT * FROM tasks WHERE user_id = ?", (id,)).fetchall()
     conn.close()
-    return render_template("todo.html", tasks=tasks)
+    return render_template("todo.html", tasks=tasks, name=name)
 
 #-------------API to add task------------
 @todo_bp.route("/tasks", methods=["POST"])
@@ -116,4 +124,21 @@ def delete_task(task_id):
     if deleted == 0:
         return jsonify({"error": "Task not found or not yours"}), 404
 
+    return jsonify({"success": True})
+
+# --- NEW ROUTE: Update Task Status (Drag and Drop) ---
+@todo_bp.route("/tasks/<int:task_id>/status", methods=["PATCH"])
+def update_task_status(task_id):
+    if "u_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    
+    data = request.get_json()
+    new_status = data.get("status")
+    
+    conn = get_db_connection()
+    conn.execute("UPDATE tasks SET status = ? WHERE id = ? AND user_id = ?", 
+                 (new_status, task_id, session["u_id"]))
+    conn.commit()
+    conn.close()
+    
     return jsonify({"success": True})
