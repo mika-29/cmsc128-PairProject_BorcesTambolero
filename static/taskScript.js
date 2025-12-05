@@ -10,7 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskSelect      = document.getElementById("task");
   const prioritySelect  = document.getElementById("priority");
   const nameError       = document.getElementById("nameError");
+  const deleteModal = document.getElementById("deleteModal");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 
+  let taskToDeleteElement = null; // Stores the DOM element
+  let taskToDeleteId = null;      // Stores the ID
   let editingTask = null;   
 
   // ====== Rendering Tasks ======                              
@@ -57,14 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <ul class="options-menu">
             <li class="edit-task">Edit</li>
             <li class="delete-task">Delete</li>
-            <li class="move-task">
-              Change Status
-              <ul class="status-menu">
-                <li data-status="pending">Pending</li>
-                <li data-status="ongoing">Ongoing</li>
-                <li data-status="done">Done</li> 
-              </ul>
-            </li>
           </ul>
         </div>
       `;
@@ -162,13 +159,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const task = e.target.closest(".task-card");
       const id = task.dataset.id; 
 
-      if (confirm("Are you sure you want to delete this task?")) {
-        task.style.display = "none"; 
-        showToast(`Task "${task.dataset.title}" deleted`, { id, element: task, title: task.dataset.title, }); 
-      }
+      // Close the dropdown menu
+      const menu = e.target.closest(".options-menu");
+      if(menu) menu.classList.remove("show");
+
+      // STORE the task info and OPEN the custom modal
+      taskToDeleteElement = task;
+      taskToDeleteId = id;
+      deleteModal.style.display = "flex";
     }
 
     if (e.target.classList.contains("edit-task")) {
+      const menu = e.target.closest(".options-menu");
+      if (menu) menu.classList.remove("show"); 
+      
       const task = e.target.closest(".task-card");
       editingTask = task;
 
@@ -182,18 +186,18 @@ document.addEventListener("DOMContentLoaded", () => {
       openForm(true);
     }
 
-    if (e.target.closest(".status-menu li")) {
-      const newStatus = e.target.getAttribute("data-status");
-      const task = e.target.closest(".task-card");
-      const id = task.dataset.id;
+    // if (e.target.closest(".status-menu li")) {
+    //   const newStatus = e.target.getAttribute("data-status");
+    //   const task = e.target.closest(".task-card");
+    //   const id = task.dataset.id;
 
-      await fetch(`/tasks/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      loadTasks();
-    }
+    //   await fetch(`/tasks/${id}`, {
+    //     method: "PUT",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ status: newStatus }),
+    //   });
+    //   loadTasks();
+    // }
   }
 
   function openForm(isEdit = false) {
@@ -341,4 +345,36 @@ document.addEventListener("DOMContentLoaded", () => {
       }, { offset: Number.NEGATIVE_INFINITY }).element;
   }
 
+  // ==========================================
+// DELETE 
+// ==========================================
+
+// --- Cancel Delete ---
+  cancelDeleteBtn.addEventListener("click", () => {
+      deleteModal.style.display = "none";
+      taskToDeleteElement = null;
+      taskToDeleteId = null;
+  });
+
+  // --- Confirm Delete ---
+  confirmDeleteBtn.addEventListener("click", () => {
+      if (taskToDeleteElement && taskToDeleteId) {
+          taskToDeleteElement.style.display = "none"; 
+          showToast(
+              `Task "${taskToDeleteElement.dataset.title}" deleted`, 
+              { 
+                  id: taskToDeleteId, 
+                  element: taskToDeleteElement, 
+                  title: taskToDeleteElement.dataset.title 
+              }
+          );
+      }
+      // Close the modal
+      deleteModal.style.display = "none";
+      
+      // Reset variables
+      taskToDeleteElement = null;
+      taskToDeleteId = null;
+  });
 });
+
