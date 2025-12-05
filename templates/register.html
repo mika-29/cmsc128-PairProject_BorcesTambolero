@@ -21,25 +21,30 @@
         <p class="error">{{ error }}</p>
       {% endif %}
 
-      <form id="registerForm" action="/signup" method="POST">
-        <!-- Step 1 -->
-        <div id="step1" class="active-step">
-          <h2>Step 1: Create Account</h2>
-          <input type="text" name="name" placeholder="User Name" required>
-          <input type="email" name="email" placeholder="Email address" required>
-          <input type="password" name="password" placeholder="Password" required>
-          <input type="password" name="confirm" placeholder="Confirm Password" required>
-          <button type="button" id="nextBtn">Next</button>
-        </div>
+      <form id="registerForm" action="/signup" method="POST" autocomplete="off">
+  
+    <div id="step1" class="active-step">
+      <h2>Step 1: Create Account</h2>
+      
+      <input type="text" name="name" placeholder="User Name" required autocomplete="off">
+      <input type="email" name="email" placeholder="Email address" required autocomplete="off">
+      
+      <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
+      <input type="password" name="confirm" placeholder="Confirm Password" required autocomplete="new-password">
+      
+      <div class="button-group">
+        <button type="button" id="nextBtn">Next</button>
+        <a href="{{ url_for('login.index') }}" class="btn-back-link">Back to Login</a>
+      </div>
+    </div>
 
         <!-- Step 2 -->
         <div id="step2" class="inactive-step">
           <h2>Step 2: Security Questions</h2>
 
           <div class="security-question">
-            <label for="q1">Security Question 1</label>
             <select name="question1" id="q1" required>
-              <option value="">-- Select a question --</option>
+              <option value="">Select a question</option>
               <option value="pet">What was the name of your first pet?</option>
               <option value="school">What is the name of your elementary school?</option>
               <option value="city">In what city were you born?</option>
@@ -48,8 +53,10 @@
             <input type="text" name="answer1" id="ans1" placeholder="Your Answer" required>
           </div> 
 
-          <button type="submit">Save Security Info</button>
-          <button type="button" id="btn-back">Back</button>
+          <div class="button-group">
+            <button type="submit">Save Security Info</button>
+            <button type="button" id="btn-back" class="btn-back-link">Back</button>
+          </div>
         </div>
       </form>
     </div> <!-- closes form-box -->

@@ -154,6 +154,52 @@ button:hover {
     background-color: #f44336;
 }
 
+/* --- Toast Notification Styles --- */
+
+/* This container floats above everything */
+#toast-container {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%); /* Centers it horizontally */
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Allows clicking through it */
+}
+
+/* The bubble look */
+.toast-message {
+    background-color: #ad3434; /* Dark background */
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 1px solid #444;
+    opacity: 1;
+    transform: translateY(0);
+    animation: slideDown 0.5s forwards; /* Entrance animation */
+    transform: translateY(0);
+}
+/* Animation: Slide in from top */
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Class added by JS to fade out */
+.fade-out {
+    opacity: 0;
+    transform: translateY(-20px);
+}
 
 /* Simple red error message */
 .error {

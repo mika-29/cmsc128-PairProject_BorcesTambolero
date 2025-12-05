@@ -6,15 +6,17 @@
     <title>To-Do To-Be LogIn</title>
     <link rel="stylesheet" type="text/css" href="../static/loginStyle.css">
 </head>
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="notification {{ category }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+<div id="toast-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="toast-message {{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+</div>
 <body>
     <header>
         <h1 id="title">To-Do</h1>
@@ -45,4 +47,15 @@
         </div>
     </div>
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toasts = document.querySelectorAll('.toast-message');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 500); 
+            }, 3000); 
+        });
+    });
+</script>
 </html>
