@@ -33,3 +33,28 @@ document.addEventListener("DOMContentLoaded", function () {
     step1.classList.remove("inactive-step");
   });
 });
+
+
+// PREVENT BACK BUTTON CACHING
+window.addEventListener("pageshow", function (event) {
+  var historyTraversal = event.persisted ||
+    (typeof window.performance != "undefined" &&
+      window.performance.navigation.type === 2);
+
+  if (historyTraversal) {
+    // 1. Reset the form data
+    document.getElementById("registerForm").reset();
+
+    // 2. Force the UI back to Step 1
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    
+    step2.classList.remove("active-step");
+    step2.classList.add("inactive-step");
+    step1.classList.add("active-step");
+    step1.classList.remove("inactive-step");
+
+    // 3. Force a reload from the server to ensure clean state
+    window.location.reload();
+  }
+});

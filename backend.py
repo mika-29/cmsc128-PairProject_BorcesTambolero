@@ -68,14 +68,34 @@ def get_tasks():
         return jsonify({"error": "Not logged in"}), 401
 
     user_id = session["u_id"]
+    sort_by = request.args.get("sort", "date_added")
     conn = get_db_connection()
-    rows = conn.execute("""
+
+    if sort_by == "deadline":
+        order_clause = "deadline ASC, duetime ASC"
+    
+    elif sort_by == "priority":
+        order_clause = """
+            CASE priority 
+                WHEN 'important' THEN 1 
+                WHEN 'mid' THEN 2 
+                WHEN 'easy' THEN 3 
+                ELSE 4 
+            END ASC
+        """
+    else: # Default to 'date_added'
+        order_clause = "created_at DESC"
+
+    query = f"""
         SELECT id, title, deadline, duetime, status, priority, created_at
         FROM tasks
         WHERE user_id = ?
-        ORDER BY created_at DESC
-    """, (user_id,)).fetchall()
+        ORDER BY {order_clause}
+    """
+    
+    rows = conn.execute(query, (user_id,)).fetchall()
     conn.close()
+    
     return jsonify([dict(r) for r in rows])
 
 #----------- API to edit tasks --------------
